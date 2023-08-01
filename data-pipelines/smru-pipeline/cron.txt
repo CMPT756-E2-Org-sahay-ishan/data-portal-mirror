@@ -1,0 +1,2 @@
+*/20 * * * * cd /home/centos/hallo-dev/ && /usr/bin/python3.6 /home/centos/hallo-dev/smru_detections.py
+5-59/20 * * * * cd /home/centos/hallo-dev/ && /usr/bin/python3.6 /home/centos/hallo-dev/audio.py
