@@ -120,7 +120,7 @@ except Exception as err:
     log_error("error_log.txt", "Error in reading data from database table smru detection events:  ", str(err))
                                                                                                                                            
 ######################### truncate table new_detection_events 
-sqlTruncateTable='TRUNCATE TABLE new_detection_events;'
+sqlTruncateTable='TRUNCATE TABLE smru_new_detection_events;'
 try:
     cursor.execute(sqlTruncateTable)
 except Exception as err:
