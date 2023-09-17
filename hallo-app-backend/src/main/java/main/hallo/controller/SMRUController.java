@@ -26,10 +26,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.http.MediaType;
-import main.hallo.smru.DetectionEvents;
-import main.hallo.smru.SmruDetectionEventsRepo;
-import main.hallo.smru.SmruService;
 
+import main.hallo.dto.SmruEventsDto;
+import main.hallo.smru.SmruDetectionEvents;
+import main.hallo.smru.SmruDetectionEventsDtoRepo;
+import main.hallo.smru.SmruDetectionEventsRepo;
+import main.hallo.smru.SmruDto;
+import main.hallo.smru.SmruService;
 
 
 @RestController
@@ -37,6 +40,12 @@ import main.hallo.smru.SmruService;
 public class SMRUController {
 @Autowired
 SmruService smruService;
+
+
+@Autowired
+SmruDetectionEventsDtoRepo smruRepo;
+@Autowired
+SmruDetectionEventsRepo smruMainRepo;
 
 @Value("${smruAudioPath}")
 private String smruAudioFolder;
@@ -51,10 +60,11 @@ private String smruAudioFolder;
 	@GetMapping("/events/all")
 	public ResponseEntity<?>
 	//When this API gets behind the filter, this part needs to be commented out
-	//getAllEvents(@AuthenticationPrincipal main.hallo.user.User user)
-	getAllEvents(){
+	//getAllEvents(){
+	getAllEvents(@AuthenticationPrincipal main.hallo.user.User user){
+	System.out.println("This is the user " +user); 
 
-		List<DetectionEvents> allEvents=smruService.smruEvents();
+		List<SmruDetectionEvents> allEvents=smruService.smruEvents();
 		return ResponseEntity.ok(allEvents);
 	}
 	
@@ -151,4 +161,12 @@ private String smruAudioFolder;
 		return ResponseEntity.ok(streamResponseBody);
 	}
 	
+	
+	@GetMapping(path = "/all")
+	public List<SmruDto> findAllEvents() {
+		//return (List<SmruEventsDto>) smruRepo.findAllDateProcessedSmruEvents();smruMainRepo
+		List<SmruDto> result=smruMainRepo.allDtoresults();
+		for (SmruDto item:result) {System.out.println(item.getTime());}
+		return result;
+	}
 }

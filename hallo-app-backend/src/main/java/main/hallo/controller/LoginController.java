@@ -3,8 +3,10 @@ package main.hallo.controller;
 import java.util.Collection;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -24,14 +26,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/auth/")
 public class LoginController {
 	@Autowired
 	AuthenticationManager authenticationManager;
 	
 	@Autowired
 	JwtUtil jwtUtil;
-
+	
+	 @Value("${cookies.domain}")
+	    private String domain;
+	 
 	@PostMapping("login")
 	public ResponseEntity<?> 
 	login (@RequestBody AuthenticationRequestCredential req){
@@ -70,4 +75,16 @@ public class LoginController {
 			return ResponseEntity.ok(false);
 		}
 	}
+	
+	////
+    @GetMapping("/logout")
+    public ResponseEntity<?> logout () {
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .domain(domain)
+                .path("/")
+                .maxAge(0)
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, cookie.toString()).body("ok");
+    }
 }

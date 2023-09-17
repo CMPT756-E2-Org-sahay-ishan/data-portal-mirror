@@ -48,12 +48,11 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 		response.sendError(HttpServletResponse.SC_UNAUTHORIZED,ex.getMessage());
 		}).and()
 		.authorizeHttpRequests()
-		//.antMatchers("/api/auth/**").permitAll()
-		.antMatchers("/api/smru/**").permitAll();
-		//.antMatchers("/api").permitAll()
-		//.anyRequest().authenticated();
-		//http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-		
+		.antMatchers("/api/smru/**").authenticated()
+		.antMatchers("/api/auth/**").permitAll()
+		.antMatchers("/api/users/register").permitAll()
+		.anyRequest().authenticated();
+		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 	}
 }
 

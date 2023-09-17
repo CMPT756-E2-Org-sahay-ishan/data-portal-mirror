@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 @Entity
-public class DetectionEvents {
+public class SmruDetectionEvents {
 	@Id
 	private String idstring;
 	

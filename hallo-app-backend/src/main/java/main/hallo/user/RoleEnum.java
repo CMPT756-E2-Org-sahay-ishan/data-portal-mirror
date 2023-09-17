@@ -1,7 +1,10 @@
 package main.hallo.user;
 
 public enum RoleEnum {
- ROLE_STUDENT,
+ ROLE_ANNOTATER,
  ROLE_RESEARCHER,
- ROLE_ADMIN
+ ROLE_ADMIN,
+ ROLE_PUBLIC
 }
+
+

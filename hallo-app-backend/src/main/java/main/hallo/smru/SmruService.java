@@ -11,9 +11,9 @@ public class SmruService {
 	@Autowired
 	SmruDetectionEventsRepo smruDetectionEventsRepo;
 	
-	public List<DetectionEvents> smruEvents(){
+	public List<SmruDetectionEvents> smruEvents(){
 		
-		List<DetectionEvents> result=smruDetectionEventsRepo.findAll();
+		List<SmruDetectionEvents> result=smruDetectionEventsRepo.findAll();
 		return result;
 	}
 }
