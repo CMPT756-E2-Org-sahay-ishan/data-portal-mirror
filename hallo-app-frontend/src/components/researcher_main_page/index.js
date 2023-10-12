@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocalState } from '../util/useLocalStorage';
 
 import {
@@ -12,19 +12,20 @@ import {
 } from "rsuite";
 import ToggleButton from './util/toggle';
 import SMRUDetectionsChart from '../smru_chart/detections_chart';
+import Spectrogram from '../spectrogram';
+import Test from '../test';
+import AudioHeatmap from '../test';
 const ResearcherMain=()=>{
-	const data =[
 
-		{ date: '2023-07-05', time: '12:30', idstring:"hh"},
-	
-		{ date: '2023-07-06', time: '17:00', idstring:"jj"},
-		{ date: '2023-07-07', time: '18:20', idstring:"kk"},
-		{ date: '2023-07-08', time: '18:00', idstring:"ll"}
-	
-	];
+
+
   const[jwt, setJwt]=useLocalState("", "jwt");
   const [expand, setExpand] = useState(true);
   const [smruData, setSmruData]=useState([]);
+  //This state to get data from chart component click event and pass it to Spectrogram
+  const [idstringInParentComponent, setIdstringInParentComponent]=useState("");
+  let AudioUrl='api/smru/audio/'+idstringInParentComponent;
+ //This function handles click event to fetch SMRU data
   const smruFetch=()=>{
 	fetch('api/smru/all', {
 		headers:{
@@ -128,10 +129,14 @@ const ResearcherMain=()=>{
 						Humans and Algorithms Listening to Orcas explores the concept of training artificial intelligence systems to detect underwater whale vocalizations. The research goal is to develop a whale forecasting system to warn nearby ships of whale presence. This could prevent potentially fatal ship strikes for the endangered Southern Resident killer whales and other whale species that frequent the waters of the Salish Sea in the Pacific Northwest.
 						</p>
 						<div style={{'width':'700px'}}>
-						{smruData.length!=0 && <SMRUDetectionsChart data={smruData}/>}
+						{smruData.length!=0 && <SMRUDetectionsChart setStringidForParentFromChild={setIdstringInParentComponent} data={smruData}/>}
 						
 						</div>
+						<hr style={{color:"black !important"}}/>
+						{  idstringInParentComponent && <Spectrogram apiUrl={AudioUrl} />  }
+						 {/* <p>This is we have: {idstringInParentComponent}</p> */}
 						
+
 					</Content>
 				</Container>
 			</Container>

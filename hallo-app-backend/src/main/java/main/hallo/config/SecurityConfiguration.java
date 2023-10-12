@@ -14,7 +14,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 
+import main.hallo.apiKey.ApiKeyFilter;
 import main.hallo.config.CustomPassword;
 import main.hallo.jwt.JwtFilter;
 
@@ -26,6 +28,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 	private CustomPassword passwordEncoder;
 	@Autowired
 	JwtFilter jwtFilter;
+	@Autowired
+
 	
 	@Override @Bean
 	public AuthenticationManager authenticationManagerBean() throws Exception{
@@ -50,9 +54,18 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 		.authorizeHttpRequests()
 		.antMatchers("/api/smru/**").authenticated()
 		.antMatchers("/api/auth/**").permitAll()
+		.antMatchers("/api/key/secure").authenticated()
 		.antMatchers("/api/users/register").permitAll()
+		.antMatchers("/SmruAudio/").permitAll()
 		.anyRequest().authenticated();
+        http.addFilterBefore(apiKeyFilter(), RequestHeaderAuthenticationFilter.class);
 		http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+		
 	}
+	
+    @Bean
+    public ApiKeyFilter apiKeyFilter() {
+        return new ApiKeyFilter();
+    }
 }
 

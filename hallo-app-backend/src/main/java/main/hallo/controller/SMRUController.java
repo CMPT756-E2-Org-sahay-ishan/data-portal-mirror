@@ -157,11 +157,12 @@ private String smruAudioFolder;
 		response.setHeader("Content-Disposition", "attachment; filename=example.zip");
 		response.addHeader("Pragma", "no-cache");
 		response.addHeader("Expires", "0");
-
 		return ResponseEntity.ok(streamResponseBody);
+		
+		
 	}
 	
-	
+	////Getting all  smru data for test
 	@GetMapping(path = "/all")
 	public List<SmruDto> findAllEvents() {
 		//return (List<SmruEventsDto>) smruRepo.findAllDateProcessedSmruEvents();smruMainRepo

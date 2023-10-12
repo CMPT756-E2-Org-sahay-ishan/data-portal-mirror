@@ -46,7 +46,9 @@ const options= {
    onClick: (event, elements, chart) => {
     if (elements[0]) {            
        const i = elements[0].index;
-       alert(idStrings[i]);
+       return props.setStringidForParentFromChild(idStrings[i])
+
+       //alert(props.id);
      
     }
   }
