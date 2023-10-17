@@ -20,25 +20,13 @@ services:
       context: hallo-app-frontend
       dockerfile: Dockerfile
    
-
-    ports:
-      - 3000:3000
-    volumes:
-      - webdata:/app/build/
-    depends_on:
-      - back-end
-  
-  web-server:
-    image: nginx:mainline-alpine3.18-slim
-    ports:
+      ports:
       - 80:80
       - 443:443
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
-      - webdata:/usr/share/nginx/html/:ro
       # - ./certbot/www:/var/www/certbot/:ro
       # - ./certbot/conf:/etc/letsencrypt
     depends_on:
-      - front-end
-volumes:
-  webdata:
+      - back-end
+  
