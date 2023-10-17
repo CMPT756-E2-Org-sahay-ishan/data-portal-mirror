@@ -19,8 +19,7 @@ services:
     build:
       context: hallo-app-frontend
       dockerfile: Dockerfile
-   
-      ports:
+    ports:
       - 80:80
       - 443:443
     volumes:
