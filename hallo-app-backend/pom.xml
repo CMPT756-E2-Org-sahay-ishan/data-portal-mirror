@@ -51,11 +51,11 @@
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
     <groupId>com.github.paulcwarren</groupId>
     <artifactId>spring-content-fs-boot-starter</artifactId>
     <version>3.0.5</version>
-</dependency>
+</dependency> -->
 	</dependencies>
 
 	<build>
