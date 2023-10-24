@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocalState } from '../util/useLocalStorage';
 import WaveSurfer from 'wavesurfer.js';
+import {default as wsSprectrogram} from 'wavesurfer.js/dist/plugins/spectrogram.js';
 import AudioHeatmap from '../test';
 
 
@@ -67,7 +68,14 @@ useEffect(() => {
         progressColor: '#383351'
         
       });
-
+      // Initialize the Spectrogram plugin
+      wavesurfer.registerPlugin(
+        wsSprectrogram.create({
+          labels: true,
+          height: 200,
+          // splitChannels: true,
+        }),
+      )
       // Load the audio data from the fetched blob
       wavesurfer.loadBlob(blob);
     }
