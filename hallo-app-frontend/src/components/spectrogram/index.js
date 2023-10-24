@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useLocalState } from '../util/useLocalStorage';
 import WaveSurfer from 'wavesurfer.js';
 import {default as wsSprectrogram} from 'wavesurfer.js/dist/plugins/spectrogram.js';
+import {default as wsTimelinePlugin} from 'wavesurfer.js/dist/plugins/timeline.js';
 import AudioHeatmap from '../test';
 
 
@@ -86,6 +87,9 @@ useEffect(() => {
           // splitChannels: true,
         }),
       )
+      // Initialize the Timeline plugin
+      wavesurfer.registerPlugin(wsTimelinePlugin.create())
+
       // Play on click
       wavesurfer.once('interaction', () => {
         wavesurfer.play()
