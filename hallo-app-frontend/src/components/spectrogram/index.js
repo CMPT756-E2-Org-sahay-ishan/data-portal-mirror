@@ -62,11 +62,21 @@ useEffect(() => {
 
       // Create a new wavesurfer instance
       const wavesurfer = WaveSurfer.create({
-         container: waveformRef.current,
+        container: waveformRef.current,
         responsive: true,
+        /** Stretch the waveform to the full height */
+        normalize: true,   
         waveColor: '#4F4A85',
         progressColor: '#383351'
         
+        /** Audio URL */
+        // url: '/examples/audio/audio.wav',
+        /** Whether to show default audio element controls */
+        mediaControls: true,
+        /** Pass false to disable clicks on the waveform */
+        interact: true,
+        /** Allow to drag the cursor to seek to a new position */
+        dragToSeek: true,
       });
       // Initialize the Spectrogram plugin
       wavesurfer.registerPlugin(
