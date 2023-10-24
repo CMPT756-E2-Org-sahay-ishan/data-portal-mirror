@@ -61,6 +61,13 @@ useEffect(() => {
     if (audioData) {
       const blob = new Blob([audioData]);
 
+      const colormap = require('colormap');
+      const colors = colormap({
+        colormap: 'hot',
+        nshades: 256,
+        format: 'float'
+      });
+
       // Create a new wavesurfer instance
       const wavesurfer = WaveSurfer.create({
         container: waveformRef.current,
@@ -84,6 +91,7 @@ useEffect(() => {
         wsSprectrogram.create({
           labels: true,
           height: 200,
+          colorMap: colors,
           // splitChannels: true,
         }),
       )
