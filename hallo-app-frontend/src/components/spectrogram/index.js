@@ -76,6 +76,10 @@ useEffect(() => {
           // splitChannels: true,
         }),
       )
+      // Play on click
+      wavesurfer.once('interaction', () => {
+        wavesurfer.play()
+      })
       // Load the audio data from the fetched blob
       wavesurfer.loadBlob(blob);
     }
