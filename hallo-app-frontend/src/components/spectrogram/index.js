@@ -74,9 +74,8 @@ useEffect(() => {
         responsive: true,
         /** Stretch the waveform to the full height */
         normalize: true,   
-        waveColor: '#4F4A85',
-        progressColor: '#383351'
-        
+        waveColor: '#ff4e00',
+        progressColor: '#dd5e98',
         /** Audio URL */
         // url: '/examples/audio/audio.wav',
         /** Whether to show default audio element controls */
