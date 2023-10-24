@@ -7,7 +7,7 @@ services:
       - 8080:8080
 
     volumes:
-      - /Users/***REMOVED***/Desktop/hallo/audio:/Users/***REMOVED***/Desktop/hallo/audio
+      - /Users/***REMOVED***/Desktop/hallo/audio:/audio/live/smru/
     environment:
       - spring.datasource.url=jdbc:postgresql://host.docker.internal:0/hallo
       - spring.datasource.username=username
