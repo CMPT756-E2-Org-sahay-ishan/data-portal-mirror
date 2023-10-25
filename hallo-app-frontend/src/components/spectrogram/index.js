@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocalState } from '../util/useLocalStorage';
 import WaveSurfer from 'wavesurfer.js';
+import {default as wsSprectrogram} from 'wavesurfer.js/dist/plugins/spectrogram.js';
+import {default as wsTimelinePlugin} from 'wavesurfer.js/dist/plugins/timeline.js';
 import AudioHeatmap from '../test';
 
 
@@ -59,15 +61,46 @@ useEffect(() => {
     if (audioData) {
       const blob = new Blob([audioData]);
 
-      // Create a new wavesurfer instance
-      const wavesurfer = WaveSurfer.create({
-         container: waveformRef.current,
-        responsive: true,
-        waveColor: '#4F4A85',
-        progressColor: '#383351'
-        
+      const colormap = require('colormap');
+      const colors = colormap({
+        colormap: 'hot',
+        nshades: 256,
+        format: 'float'
       });
 
+      // Create a new wavesurfer instance
+      const wavesurfer = WaveSurfer.create({
+        container: waveformRef.current,
+        responsive: true,
+        /** Stretch the waveform to the full height */
+        normalize: true,   
+        waveColor: '#ff4e00',
+        progressColor: '#dd5e98',
+        /** Audio URL */
+        // url: '/examples/audio/audio.wav',
+        /** Whether to show default audio element controls */
+        mediaControls: true,
+        /** Pass false to disable clicks on the waveform */
+        interact: true,
+        /** Allow to drag the cursor to seek to a new position */
+        dragToSeek: true,
+      });
+      // Initialize the Spectrogram plugin
+      wavesurfer.registerPlugin(
+        wsSprectrogram.create({
+          labels: true,
+          height: 200,
+          colorMap: colors,
+          // splitChannels: true,
+        }),
+      )
+      // Initialize the Timeline plugin
+      wavesurfer.registerPlugin(wsTimelinePlugin.create())
+
+      // Play on click
+      wavesurfer.once('interaction', () => {
+        wavesurfer.play()
+      })
       // Load the audio data from the fetched blob
       wavesurfer.loadBlob(blob);
     }
