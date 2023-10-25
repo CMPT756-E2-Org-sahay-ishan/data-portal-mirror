@@ -84,9 +84,8 @@ useEffect(() => {
         
         <div>
  
-
-      <audio ref={audioPlayerRef} controls>
-        Your browser does not support the audio element.
+      
+      <audio ref={audioPlayerRef} controls type="audio/wav">
       </audio>
     </div>
 
