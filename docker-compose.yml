@@ -1,3 +1,4 @@
+version: '3'
 services:
   back-end:
     build:
@@ -5,16 +6,20 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
-
+    networks: 
+      hallonet:
+        ipv4_address: 10.5.0.5
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
-      - /Users/***REMOVED***/Desktop/hallo/audio:/audio/live/smru/
-    environment:
+      - /home/centos/smru_audio:/home/centos/smru_audio
+    environment: # 172.17.0.1
       - spring.datasource.url=jdbc:postgresql://host.docker.internal:0/hallo
-      - spring.datasource.username=username
+      - spring.datasource.username=development
       - spring.datasource.password=USE_YOUR_OWN_PASSWORD
       - spring.profiles.active=prod
+    restart: unless-stopped
 
-    
   front-end:
     build:
       context: hallo-app-frontend
@@ -22,10 +27,20 @@ services:
     ports:
       - 80:80
       - 443:443
+    networks: 
+      hallonet:
+        ipv4_address: 10.5.0.6
     volumes:
       - ./nginx/conf/:/etc/nginx/conf.d/:ro
-      # - ./certbot/www:/var/www/certbot/:ro
-      # - ./certbot/conf:/etc/letsencrypt
     depends_on:
       - back-end
-  
+    restart: unless-stopped
+
+networks:
+  hallonet:
+    driver: bridge
+    name: hallonet
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1

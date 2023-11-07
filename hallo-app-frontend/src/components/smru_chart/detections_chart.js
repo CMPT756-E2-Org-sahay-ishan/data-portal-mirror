@@ -35,7 +35,7 @@ var data={
      ],
  }
 
- props.data.map((item)=>{console.log(item.time)})
+//  props.data.map((item)=>{console.log(item.time)})
 
  var idStrings=props.data.map(function(e) {
     return e.idstring;})
@@ -46,8 +46,9 @@ const options= {
    onClick: (event, elements, chart) => {
     if (elements[0]) {            
        const i = elements[0].index;
-       return props.setStringidForParentFromChild(idStrings[i])
+       console.log("This is the id String "+ idStrings[i])
 
+       return props.setStringidForParentFromChild(idStrings[i])
        //alert(props.id);
      
     }

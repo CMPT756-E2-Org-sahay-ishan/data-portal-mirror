@@ -1,138 +1,79 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocalState } from '../util/useLocalStorage';
 import WaveSurfer from 'wavesurfer.js';
-import {default as wsSprectrogram} from 'wavesurfer.js/dist/plugins/spectrogram.js';
-import {default as wsTimelinePlugin} from 'wavesurfer.js/dist/plugins/timeline.js';
-import AudioHeatmap from '../test';
+import { default as wsSprectrogram } from 'wavesurfer.js/dist/plugins/spectrogram.js';
+import { default as wsTimelinePlugin } from 'wavesurfer.js/dist/plugins/timeline.js';
+
+function Spectrogram({ apiUrl }) {
+  const [jwt, setJwt] = useLocalState('', 'jwt');
+  const waveformRef = useRef(null);
+
+  // Create a state variable for Wavesurfer
+  const [wavesurfer, setWavesurfer] = useState(null);
+
+  useEffect(() => {
+    // Destroy the current Wavesurfer instance if it exists
+    if (wavesurfer) {
+      wavesurfer.destroy();
+    }
+
+    // Create a new Wavesurfer instance
+    const newWavesurfer = WaveSurfer.create({
+      container: waveformRef.current,
+      responsive: true,
+       
+      normalize: true,  /** Stretch the waveform to the full height */
+      waveColor: '#ff4e00',
+      progressColor: '#dd5e98',
+      mediaControls: true,
+      interact: true, /** Pass false to disable clicks on the waveform */
+      dragToSeek: true,  /** Allow to drag the cursor to seek to a new position */
+    });
+
+    const colormap = require('colormap');
+    const colors = colormap({
+      colormap: 'hot',
+      nshades: 256,
+      format: 'float'
+    });
 
 
+    // Initialize the Spectrogram plugin
+    newWavesurfer.registerPlugin(
+      wsSprectrogram.create({
+        labels: true,
+        height: 200,
+        colorMap: colors,
+    
+      })
+    );
 
-function Spectrogram({ apiUrl }){
-    let url='api/smru/audio/'+'64b72a600687e9006d27899c';
-    const[jwt, setJwt]=useLocalState("", "jwt");
-    const waveformRef = useRef(null);
-    const canvasRef = useRef(null);
+    // Initialize the Timeline plugin
+    newWavesurfer.registerPlugin(wsTimelinePlugin.create());
 
-    const audioDataArrayBuffer = new Float32Array([0.2, 0.5, 0.8, 0.3, 0.9, 0.6, 0.4, 0.7, 0.1]).buffer;
+    // Load audio data from the fetched URL
+    fetchAudio(newWavesurfer, apiUrl);
+    setWavesurfer(newWavesurfer); // Save the constructed new Wavesurfer instance in the wavesurfer instance
+  }, [apiUrl]);
 
-   
-  ////////
-  const [audioData, setAudioData] = useState(null);
-  const [audioObjectURL, setAudioObjectURL] = useState(null);
-  const audioPlayerRef = React.createRef();
-
-  const [spectrogramData, setSpectrogramData] = useState(null);
-
-
-  const fetchAudio = async () => {
+  // Fetch audio data and load it into Wavesurfer
+  const fetchAudio = async (ws, audioUrl) => {
     try {
-      const response = await fetch(apiUrl, {
-        headers:{
-          "Content-Type":"application/json",
-          Authorization:`Bearer ${jwt}`
-        }, 
-        method:"GET"
+      const response = await fetch(audioUrl, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${jwt}`,
+        },
+        method: 'GET',
       });
       const data = await response.arrayBuffer();
-      console.log("This is array buffer of audio " + data)
-      setAudioData(data);
-      audioPlayerRef.current.src = URL.createObjectURL(new Blob([data]));
-
+      ws.loadBlob(new Blob([data]));
     } catch (error) {
       console.error('Error fetching audio:', error);
     }
   };
 
-  useEffect(() => {
-    fetchAudio(); // Fetch audio when the component mounts
-
-    return () => {
-      // Revoke the object URL when the component unmounts
-      if (audioObjectURL) {
-        URL.revokeObjectURL(audioObjectURL);
-      }
-    };
-  }, [apiUrl, audioObjectURL]);
-
-///////////
-
-useEffect(() => {
-  const decodeData = async () => {
-    if (audioData) {
-      const blob = new Blob([audioData]);
-
-      const colormap = require('colormap');
-      const colors = colormap({
-        colormap: 'hot',
-        nshades: 256,
-        format: 'float'
-      });
-
-      // Create a new wavesurfer instance
-      const wavesurfer = WaveSurfer.create({
-        container: waveformRef.current,
-        responsive: true,
-        /** Stretch the waveform to the full height */
-        normalize: true,   
-        waveColor: '#ff4e00',
-        progressColor: '#dd5e98',
-        /** Audio URL */
-        // url: '/examples/audio/audio.wav',
-        /** Whether to show default audio element controls */
-        mediaControls: true,
-        /** Pass false to disable clicks on the waveform */
-        interact: true,
-        /** Allow to drag the cursor to seek to a new position */
-        dragToSeek: true,
-      });
-      // Initialize the Spectrogram plugin
-      wavesurfer.registerPlugin(
-        wsSprectrogram.create({
-          labels: true,
-          height: 200,
-          colorMap: colors,
-          // splitChannels: true,
-        }),
-      )
-      // Initialize the Timeline plugin
-      wavesurfer.registerPlugin(wsTimelinePlugin.create())
-
-      // Play on click
-      wavesurfer.once('interaction', () => {
-        wavesurfer.play()
-      })
-      // Load the audio data from the fetched blob
-      wavesurfer.loadBlob(blob);
-    }
-  }
-  decodeData();
-
-}, [audioData]);
-  ////////
-
-
-  ///////////
-    return (
-        <>
-        
-        <div>
- 
-      
-      <audio ref={audioPlayerRef} controls type="audio/wav">
-      </audio>
-    </div>
-
-    <div>
-    <div ref={waveformRef} style={{width:"700px"}}></div>
-
-    </div>
-    {/* <div>
-       <AudioHeatmap audioDataArrayBuffer={audioData} /> 
-    </div> */}
-        </>
-    )
-   
-        
+  return <div ref={waveformRef}></div>;
 }
 
 export default Spectrogram;

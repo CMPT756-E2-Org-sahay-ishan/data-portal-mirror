@@ -13,8 +13,7 @@ import {
 import ToggleButton from './util/toggle';
 import SMRUDetectionsChart from '../smru_chart/detections_chart';
 import Spectrogram from '../spectrogram';
-import Test from '../test';
-import AudioHeatmap from '../test';
+
 const ResearcherMain=()=>{
 
 
@@ -24,6 +23,10 @@ const ResearcherMain=()=>{
   const [smruData, setSmruData]=useState([]);
   //This state to get data from chart component click event and pass it to Spectrogram
   const [idstringInParentComponent, setIdstringInParentComponent]=useState("");
+  
+
+
+  
   let AudioUrl='api/smru/audio/'+idstringInParentComponent;
  //This function handles click event to fetch SMRU data
   const smruFetch=()=>{
@@ -43,6 +46,11 @@ const ResearcherMain=()=>{
     window.location.href="/signin";
 
   }
+  ////
+  	useEffect(()=>{
+		//alert("id String has changed to "+ idstringInParentComponent)
+	}, [idstringInParentComponent])
+  ////
   return (
 
     		<div>
@@ -133,7 +141,7 @@ const ResearcherMain=()=>{
 						
 						</div>
 						<hr style={{color:"black !important"}}/>
-						{  idstringInParentComponent && <Spectrogram apiUrl={AudioUrl} />  }
+						{  idstringInParentComponent && <Spectrogram apiUrl={'api/smru/audio/'+idstringInParentComponent} />  }
 						 {/* <p>This is we have: {idstringInParentComponent}</p> */}
 						
 
