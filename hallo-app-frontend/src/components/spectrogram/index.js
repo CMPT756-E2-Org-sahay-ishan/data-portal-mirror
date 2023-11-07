@@ -3,10 +3,11 @@ import { useLocalState } from '../util/useLocalStorage';
 import WaveSurfer from 'wavesurfer.js';
 import { default as wsSprectrogram } from 'wavesurfer.js/dist/plugins/spectrogram.js';
 import { default as wsTimelinePlugin } from 'wavesurfer.js/dist/plugins/timeline.js';
-
+import Spinner from "react-spinners/CircleLoader";
 function Spectrogram({ apiUrl }) {
   const [jwt, setJwt] = useLocalState('', 'jwt');
   const waveformRef = useRef(null);
+  const [loading, setLoading] = useState(true); // State variable to track loading
 
   // Create a state variable for Wavesurfer
   const [wavesurfer, setWavesurfer] = useState(null);
@@ -16,7 +17,8 @@ function Spectrogram({ apiUrl }) {
     if (wavesurfer) {
       wavesurfer.destroy();
     }
-
+    //Always the loading is set to be true when the page is rerednered 
+    setLoading(true);
     // Create a new Wavesurfer instance
     const newWavesurfer = WaveSurfer.create({
       container: waveformRef.current,
@@ -68,12 +70,30 @@ function Spectrogram({ apiUrl }) {
       });
       const data = await response.arrayBuffer();
       ws.loadBlob(new Blob([data]));
+
+      setLoading(false); // Set loading to false 
+
     } catch (error) {
       console.error('Error fetching audio:', error);
+      setLoading(false); // Set loading to false
+
     }
   };
 
-  return <div ref={waveformRef}></div>;
+  return (    
+  <div>
+    <div style={{width:'20%', margin:'auto'}}>
+
+      {loading ? (
+          <div>
+            <Spinner />
+            <p>Loading</p>
+          </div>
+        ) : null}
+    </div>
+
+    <div ref={waveformRef}></div>
+  </div>)
 }
 
 export default Spectrogram;
