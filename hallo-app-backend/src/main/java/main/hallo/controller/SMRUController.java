@@ -5,8 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -16,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +27,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.http.MediaType;
@@ -32,6 +37,8 @@ import main.hallo.smru.SmruDetectionEvents;
 import main.hallo.smru.SmruDetectionEventsDtoRepo;
 import main.hallo.smru.SmruDetectionEventsRepo;
 import main.hallo.smru.SmruDto;
+import main.hallo.smru.SmruSampleEvent;
+import main.hallo.smru.SmruSampleEventService;
 import main.hallo.smru.SmruService;
 
 
@@ -41,6 +48,8 @@ public class SMRUController {
 @Autowired
 SmruService smruService;
 
+@Autowired
+SmruSampleEventService smruSampleEventService;
 
 @Autowired
 SmruDetectionEventsDtoRepo smruRepo;
@@ -49,6 +58,9 @@ SmruDetectionEventsRepo smruMainRepo;
 
 @Value("${smruAudioPath}")
 private String smruAudioFolder;
+
+@Value("${smruSampleAudioPath}")
+private String smruSampleAudioFolder;
 
 
 	@GetMapping("")
@@ -73,7 +85,7 @@ private String smruAudioFolder;
 		
 	//When this API gets behind the filter, this part needs to be commented out
 	//getAudios(@AuthenticationPrincipal main.hallo.user.User user)
-	getAudioForOneEvent(@PathVariable String stringId){
+	getAudioForOneEvent(@PathVariable String stringId ){
 		
         File file = new File(smruAudioFolder + "/" + stringId+".wav");
        
@@ -170,4 +182,60 @@ private String smruAudioFolder;
 		for (SmruDto item:result) {System.out.println(item.getTime());}
 		return result;
 	}
+	
+	////////////////////////////////////////////////////////////////
+		//Sample Events Controller
+	///////////////////////////////////////////////////////////////
+	
+	  @GetMapping("/sampleEvent/audio/{eventId}")
+	  public ResponseEntity<?> getAudioForOneSampleEvent(@PathVariable String eventId){
+			
+	        File file = new File(smruSampleAudioFolder + "/" + eventId+".wav");
+	       System.out.println("This is the details of the file "+ file );
+	        if (!file.exists()) {
+	        	System.out.println("File not exists");
+	            return new ResponseEntity<>(HttpStatus.NOT_FOUND);}
+	            else {
+	            	System.out.println("File exists");
+	                InputStreamResource resource;
+					try {
+						resource = new InputStreamResource(new FileInputStream(file));
+					} catch (FileNotFoundException e) {
+						
+						e.printStackTrace();
+						return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+					}
+
+	                return ResponseEntity.ok()
+	                        // Content-Disposition
+	                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
+	                        // Content-Type
+	                        .contentType(MediaType.parseMediaType("application/octet-stream"))
+	                        // Content-Length
+	                        .contentLength(file.length()) //
+	                        .body(resource);
+	            
+	        }
+
+		}
+	  ////
+	    @GetMapping("/sampleEvent")
+	    public List<SmruSampleEvent> getEventsBetweenStartTimes(
+	            @RequestParam String startTime1,
+	            @RequestParam String startTime2) {
+	    	//Creating timestamps from inputs
+	    	Timestamp timestamp1 = Timestamp.valueOf(startTime1);
+	    	Timestamp timestamp2 = Timestamp.valueOf(startTime2);
+
+
+	        return smruSampleEventService.findAllEventsBetweenStartTimes(timestamp1, timestamp2);
+	    }
+	    
+		  ////
+	    @GetMapping("/sampleEvent/all")
+	    public List<SmruSampleEvent> getEventsSampleAll()
+	           {
+	    	return smruSampleEventService.findAllSampleEvents();
+	   
+	    }
 }

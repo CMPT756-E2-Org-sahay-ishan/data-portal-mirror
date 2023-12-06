@@ -104,6 +104,15 @@ public class SmruDetectionEvents {
 	public void setHasAnnotation(Boolean hasAnnotation) {
 		this.hasAnnotation = hasAnnotation;
 	}
+	@Override
+	public String toString() {
+		return "SmruDetectionEvents [idstring=" + idstring + ", alertType=" + alertType + ", startTime=" + startTime
+				+ ", endTime=" + endTime + ", deploymentIdString=" + deploymentIdString + ", recordingIdString="
+				+ recordingIdString + ", detectionCount=" + detectionCount + ", densestMinuteStartTime="
+				+ densestMinuteStartTime + ", recordingRequested=" + recordingRequested + ", recordingReceived="
+				+ recordingReceived + ", detectionType=" + detectionType + ", batchId=" + batchId + ", hasAnnotation="
+				+ hasAnnotation + "]";
+	}
     
     
     
