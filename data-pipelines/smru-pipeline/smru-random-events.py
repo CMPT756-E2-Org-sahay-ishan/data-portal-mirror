@@ -3,9 +3,10 @@ import psycopg2
 from datetime import datetime, timedelta
 import os
 import logging
+import time
 
 # Configure logging
-logging.basicConfig(filename='smru_data_pipeline.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='sample_file.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Database connection details
 db_host = 'localhost'
@@ -18,8 +19,35 @@ event_api_url = 'api_url'
 recording_api_url = 'api_url'
 
 # Directory to save audio recordings
-audio_directory = '/data01/audio/smru'
-#audio_directory = './smru'
+audio_directory = '/data01/audio/smru/random_audio/'
+
+
+######################################################## Record the current time that the script is running and pass it as a parameter
+file_path = "sample_file.txt"
+
+def get_start_end_time(file_path):
+    # Read the start time from the file
+    if os.path.isfile(file_path):
+        with open(file_path, "r") as file:
+            start_time_string = file.read().strip()
+            start_time = int(start_time_string) if start_time_string else int(round(datetime.utcnow().timestamp() * 1000)) - 600000
+    else:
+        start_time = int(round(datetime.utcnow().timestamp() * 1000)) - 600000
+
+    # Record the current time in milliseconds as the end time
+    end_time = int(round(datetime.utcnow().timestamp() * 1000))
+
+    # Write the end time to the file
+    with open(file_path, "w") as file:
+        file.write(str(end_time))
+
+    return start_time, end_time
+#########################################################
+## Note ----->
+## For the first time that the script is executed, the start time is from 600 minutes ago
+## For the next time, the start time is from the latest time that the script was executed and end time the current time.        
+########################################################
+
 
 # Function to fetch events from the API
 def fetch_events(start_time, end_time):
@@ -62,11 +90,12 @@ def insert_into_database(event):
 
 # Main script
 def main():
-    # Fetch events from the last 1000 minutes
-    end_time = datetime.utcnow()
-    start_time = end_time - timedelta(minutes=1000)
+    # Fetch events from the last time that the script was executed
+    
+   
+    start_time, end_time =get_start_end_time(file_path)
 
-    events = fetch_events(round(start_time.timestamp() * 1000), round(end_time.timestamp() * 1000))
+    events = fetch_events(start_time, end_time)
 
     if events:
         for event in events:
