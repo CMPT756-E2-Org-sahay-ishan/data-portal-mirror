@@ -1,12 +1,13 @@
 import requests
 import psycopg2
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import os
 import logging
 import time
+import yaml
 
 # Configure logging
-logging.basicConfig(filename='sample_file.log', level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(filename='sample_file.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Database connection details
 db_host = 'localhost'
@@ -23,14 +24,18 @@ audio_directory = '/data01/audio/smru/random_audio/'
 
 
 ######################################################## Record the current time that the script is running and pass it as a parameter
-file_path = "sample_file.txt"
+file_path = "sample_file.yaml"
 
 def get_start_end_time(file_path):
     # Read the start time from the file
     if os.path.isfile(file_path):
-        with open(file_path, "r") as file:
-            start_time_string = file.read().strip()
-            start_time = int(start_time_string) if start_time_string else int(round(datetime.utcnow().timestamp() * 1000)) - 600000
+        with open(file_path, "r") as yaml_file:
+            record = yaml.safe_load(yaml_file)
+            
+            start_time_string = record.get('last_download')
+            start_time = int(start_time_string['end_time']) if start_time_string else int(round( datetime.utcnow().timestamp() * 1000)) - 600000 # 10 minutes ago in milliseconds
+            # datetime.fromisoformat('2024-01-05 08:33:11+00:00') # python 3.7+
+            # datetime.fromisoformat(start_time_string['end_time']) # python 3.7+
     else:
         start_time = int(round(datetime.utcnow().timestamp() * 1000)) - 600000
 
@@ -38,8 +43,19 @@ def get_start_end_time(file_path):
     end_time = int(round(datetime.utcnow().timestamp() * 1000))
 
     # Write the end time to the file
-    with open(file_path, "w") as file:
-        file.write(str(end_time))
+    with open(file_path, "w") as yaml_file:
+        record = {
+            'last_download':{
+                'start_time': start_time,
+                'end_time': end_time,
+                'now': datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+            }
+        }
+        yaml.dump(record, yaml_file,
+                  default_flow_style = False, 
+                  allow_unicode = True, 
+                  sort_keys=False,
+                  encoding = None)
 
     return start_time, end_time
 #########################################################
@@ -110,6 +126,7 @@ def main():
 
             # Insert event metadata into the PostgreSQL database
             insert_into_database(event)
+            logging.info(f"Completed event {event['idString']}")
 
 if __name__ == "__main__":
     main()
