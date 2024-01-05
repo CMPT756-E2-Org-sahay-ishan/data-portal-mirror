@@ -1,6 +1,8 @@
 import requests
 import psycopg2
 from datetime import datetime, timedelta, timezone
+from dateutil import parser as isoparser # TODO: From python 3.7 you can use datetime.datetime.fromisoformat
+import pytz
 import os
 import logging
 import time
@@ -27,37 +29,47 @@ audio_directory = '/data01/audio/smru/random_audio/'
 file_path = "sample_file.yaml"
 
 def get_start_end_time(file_path):
+    # TODO: utc.now() and other time functions are deprecated. Update to a modern python (3.12) standard
+    NOW = datetime.utcnow().replace(tzinfo=timezone.utc) #tzinfo=pytz.timezone('America/Vancouver')
+    start_time = NOW - timedelta(minutes=10) # 10 minutes ago in milliseconds
+    end_time = NOW
+
     # Read the start time from the file
     if os.path.isfile(file_path):
         with open(file_path, "r") as yaml_file:
-            record = yaml.safe_load(yaml_file)
+            get_from_file = yaml.safe_load(yaml_file)
             
-            start_time_string = record.get('last_download')
-            start_time = int(start_time_string['end_time']) if start_time_string else int(round( datetime.utcnow().timestamp() * 1000)) - 600000 # 10 minutes ago in milliseconds
-            # datetime.fromisoformat('2024-01-05 08:33:11+00:00') # python 3.7+
-            # datetime.fromisoformat(start_time_string['end_time']) # python 3.7+
-    else:
-        start_time = int(round(datetime.utcnow().timestamp() * 1000)) - 600000
+            last_download = get_from_file.get('last_download')
+            if last_download:
+                start_time = last_download['end_time']
+                if isinstance(start_time, str):    
+                    # start_time = datetime.fromisoformat(start_time_string['end_time']) # python 3.7+
+                    start_time = isoparser.parse(start_time)
+                elif isinstance(start_time, datetime): # Datetime object
+                    pass
+                else:
+                    logging.error("The value for last_download.start_time is not saved as a string in iso-format. Maybe it needs surrounding quotation (') symbols.")
+                    pass
 
-    # Record the current time in milliseconds as the end time
-    end_time = int(round(datetime.utcnow().timestamp() * 1000))
+   
+    # record times in readable isoformat
+    save_to_file = {
+        'last_download':{
+            'start_time': start_time.isoformat(),
+            'end_time': end_time.isoformat(),
+            'last_run': NOW.isoformat()
+        }
+    }
 
     # Write the end time to the file
     with open(file_path, "w") as yaml_file:
-        record = {
-            'last_download':{
-                'start_time': start_time,
-                'end_time': end_time,
-                'now': datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
-            }
-        }
-        yaml.dump(record, yaml_file,
+        yaml.dump(save_to_file, yaml_file,
                   default_flow_style = False, 
                   allow_unicode = True, 
                   sort_keys=False,
                   encoding = None)
 
-    return start_time, end_time
+    return (int(round( _.timestamp() * 1000 )) for _ in [start_time, end_time]) # convert seconds to milliseconds
 #########################################################
 ## Note ----->
 ## For the first time that the script is executed, the start time is from 600 minutes ago
@@ -67,6 +79,15 @@ def get_start_end_time(file_path):
 
 # Function to fetch events from the API
 def fetch_events(start_time, end_time):
+    """Fetch events from API Endpoint
+
+    Args:
+        start_time (int): epoch start time in milliseconds
+        end_time (int): epoch end_time in milliseconds
+
+    Returns:
+        dict | None: JSON response of http request to API
+    """
     try:
         response = requests.get(event_api_url.format(start_time, end_time))
         response.raise_for_status()  # Raise an HTTPError for bad responses
