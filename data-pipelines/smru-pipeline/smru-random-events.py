@@ -60,6 +60,7 @@ def get_start_end_time(file_path):
             'last_run': NOW.isoformat()
         }
     }
+    logging.info(f"{save_to_file}")
 
     # Write the end time to the file
     with open(file_path, "w") as yaml_file:
@@ -98,10 +99,16 @@ def fetch_events(start_time, end_time):
 
 # Function to download audio recording
 def download_recording(recording_id):
+    
+    recording_path = os.path.join(audio_directory, f'{recording_id}.wav')
+    
+    if os.path.isfile(recording_path):
+        logging.info(f"Recording {recording_id}.wav is already downloaded.")
+        return recording_path
+    
     try:
         response = requests.get(recording_api_url.format(recording_id))
         response.raise_for_status()
-        recording_path = os.path.join(audio_directory, f'{recording_id}.wav')
         with open(recording_path, 'wb') as audio_file:
             audio_file.write(response.content)
         return recording_path
