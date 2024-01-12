@@ -26,53 +26,61 @@ recording_api_url = 'api_url'
 # Directory to save audio recordings
 audio_directory = '/data01/audio/smru/random_audio/'
 
-
+seconds_2_milliseconds = lambda x : int(round( x.timestamp() * 1000 ))
+DOWNLOAD_WITHIN = {'days': 1}
+CHECK_WITHIN = DOWNLOAD_WITHIN
 ######################################################## Record the current time that the script is running and pass it as a parameter
 file_path = "sample_file.yaml"
 
-def get_start_end_time(file_path):
+def get_start_end_time(file_path:str = file_path):
     # TODO: utc.now() and other time functions are deprecated. Update to a modern python (3.12) standard
     NOW = datetime.utcnow().replace(tzinfo=timezone.utc) #tzinfo=pytz.timezone('America/Vancouver')
     start_time = NOW - timedelta(minutes=10) # 10 minutes ago in milliseconds
     end_time = NOW
+    last_download_time = None
 
     # Read the start time from the file
     if os.path.isfile(file_path):
         with open(file_path, "r") as yaml_file:
             get_from_file = yaml.safe_load(yaml_file)
             
-            last_download = get_from_file.get('last_download')
+            last_fetch = get_from_file.get('last_fetch')
+            last_download = last_fetch.get('last_download')
             if last_download:
-                start_time = last_download['end_time']
-                if isinstance(start_time, str):    
+                # start_time = last_download['end_time']
+                last_download_time = last_download.get('recording_endTime')
+                if isinstance(last_download_time, str):    
                     # start_time = datetime.fromisoformat(start_time_string['end_time']) # python 3.7+
-                    start_time = isoparser.parse(start_time)
-                elif isinstance(start_time, datetime): # Datetime object
+                    last_download_time = isoparser.parse(last_download_time)
+                elif isinstance(last_download, datetime): # Datetime object
                     pass
                 else:
-                    logging.error("The value for last_download.start_time is not saved as a string in iso-format. Maybe it needs surrounding quotation (') symbols.")
+                    logging.error("The value for last_fetch.last_download.last_download_time is not saved as a string in iso-format. Maybe it needs surrounding quotation (') symbols.")
                     pass
+    
+    if last_download_time: # TODO: Condition for DEV
+    # if last_download_time and  NOW - timedelta(**CHECK_WITHIN) <= last_download_time <= NOW: # TODO: Condition for PROD
+        end_time = NOW
+        start_time = last_download_time
 
-   
-    # record times in readable isoformat
-    save_to_file = {
-        'last_download':{
-            'start_time': start_time.isoformat(),
-            'end_time': end_time.isoformat(),
-            'last_run': NOW.isoformat()
-        }
-    }
-    logging.info(f"{save_to_file}")
+    else:
+        end_time = NOW
+        start_time = NOW - timedelta(**DOWNLOAD_WITHIN)
+
+
+    return start_time, end_time, NOW
+
+def save_to_file(dict_info:dict, file_path:str = file_path):
+
+    logging.info(f"{dict_info}")
 
     # Write the end time to the file
     with open(file_path, "w") as yaml_file:
-        yaml.dump(save_to_file, yaml_file,
+        yaml.dump(dict_info, yaml_file,
                   default_flow_style = False, 
                   allow_unicode = True, 
                   sort_keys=False,
                   encoding = None)
-
-    return (int(round( _.timestamp() * 1000 )) for _ in [start_time, end_time]) # convert seconds to milliseconds
 #########################################################
 ## Note ----->
 ## For the first time that the script is executed, the start time is from 600 minutes ago
@@ -81,7 +89,7 @@ def get_start_end_time(file_path):
 
 
 # Function to fetch events from the API
-def fetch_events(start_time, end_time):
+def fetch_events(start_time:int, end_time:int):
     """Fetch events from API Endpoint
 
     Args:
@@ -144,10 +152,22 @@ def main():
     # Fetch events from the last time that the script was executed
     
    
-    start_time, end_time =get_start_end_time(file_path)
+    start_time, end_time, NOW = get_start_end_time(file_path)
 
+    events = fetch_events(seconds_2_milliseconds(start_time),
+                          seconds_2_milliseconds(end_time))
     print(f"start_time={start_time}, end_time={end_time}, num_events={len(events)}")
 
+    # record times in readable isoformat
+    dict_info = {
+        'last_fetch':{
+            'start_time': start_time.isoformat(),
+            'end_time': end_time.isoformat(),
+            "num_events": len(events),
+            'invoke_time': NOW.isoformat()
+        }
+    }
+    
     if events:
         for event in events:
             # Download audio recording
@@ -157,12 +177,18 @@ def main():
                 recording_path = download_recording(recording_id)
                 if recording_path:
                     logging.info(f"Recording {recording_id} downloaded successfully to {recording_path}")
+                    dict_info['last_fetch']['last_download'] = {
+                        'recording_id': recording_id,
+                        'recording_endTime' : event['endTime']
+                    }
                 else:
                     logging.warning(f"Failed to download recording {recording_id}")
 
             # Insert event metadata into the PostgreSQL database
             insert_into_database(event)
             logging.info(f"Completed event {event['idString']}")
+
+    save_to_file(dict_info)
     print(f"start_time={start_time}, end_time={end_time}, num_events={len(events)} done", end='\n\n')
     
 if __name__ == "__main__":
