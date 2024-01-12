@@ -7,6 +7,8 @@ import os
 import logging
 import time
 import yaml
+import argparse
+
 
 # Configure logging
 logging.basicConfig(filename='sample_file.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -99,22 +101,27 @@ def fetch_events(start_time, end_time):
 
 # Function to download audio recording
 def download_recording(recording_id):
-    
+    print(f'download_recording')
+
     recording_path = os.path.join(audio_directory, f'{recording_id}.wav')
     
     if os.path.isfile(recording_path):
         logging.info(f"Recording {recording_id}.wav is already downloaded.")
         return recording_path
-    
+    print(f'donwloading {recording_id} to {recording_path}')
     try:
         response = requests.get(recording_api_url.format(recording_id))
         response.raise_for_status()
+        print('download success')
         with open(recording_path, 'wb') as audio_file:
             audio_file.write(response.content)
+        print('download and write success')
         return recording_path
     except requests.exceptions.RequestException as e:
+        print('download fail')
         logging.error(f"Error downloading recording {recording_id}: {e}")
         return None
+    
 
 # Function to insert event metadata into the PostgreSQL database
 def insert_into_database(event):
@@ -139,12 +146,13 @@ def main():
    
     start_time, end_time =get_start_end_time(file_path)
 
-    events = fetch_events(start_time, end_time)
+    print(f"start_time={start_time}, end_time={end_time}, num_events={len(events)}")
 
     if events:
         for event in events:
             # Download audio recording
             recording_id = event.get('recordingIdString')
+            print(f"event={event}, recording_id={recording_id}")
             if recording_id:
                 recording_path = download_recording(recording_id)
                 if recording_path:
@@ -155,6 +163,13 @@ def main():
             # Insert event metadata into the PostgreSQL database
             insert_into_database(event)
             logging.info(f"Completed event {event['idString']}")
-
+    print(f"start_time={start_time}, end_time={end_time}, num_events={len(events)} done", end='\n\n')
+    
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('-m', '--message', type=str, help='Any message to be sent to the logger.')
+    args = parser.parse_args()
+    if args.message:
+        logging.info(args.message)
+
     main()
