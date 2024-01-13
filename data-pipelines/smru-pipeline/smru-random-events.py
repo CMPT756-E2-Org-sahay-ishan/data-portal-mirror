@@ -142,14 +142,14 @@ def insert_into_database(event):
         connection.commit()
     except psycopg2.Error as e:
         logging.error(f"Error inserting into database: {e}")
-        if e.pgcode == psycopg2.errorcodes.UniqueViolation:
-            logging.info(f"Updating recording_id of event_id={event['idString']}")
-            # Update the existing record in the database with the recording_id
-            # connection = psycopg2.connect(host=db_host, user=db_user, password=db_password, dbname=db_name)
-            # with connection.cursor() as cursor:
-            #     sql = f"UPDATE smru_sample_events SET recording_id={event['recordingIdString']} WHERE event_id={event['idString']}"
-            #     cursor.execute(sql)
-            # connection.commit()
+        # if e.pgcode == psycopg2.errorcodes.UniqueViolation:
+        #     logging.info(f"Updating recording_id of event_id={event['idString']}")
+        #     Update the existing record in the database with the recording_id
+        #     connection = psycopg2.connect(host=db_host, user=db_user, password=db_password, dbname=db_name)
+        #     with connection.cursor() as cursor:
+        #         sql = f"UPDATE smru_sample_events SET recording_id={event['recordingIdString']} WHERE event_id={event['idString']}"
+        #         cursor.execute(sql)
+        #     connection.commit()
     finally:
         if connection:
             connection.close()
