@@ -108,26 +108,25 @@ def fetch_events(start_time:int, end_time:int):
         return None
 
 # Function to download audio recording
-def download_recording(recording_id):
+def download_recording(id_string, recording_id):
     print(f'download_recording')
 
-    recording_path = os.path.join(audio_directory, f'{recording_id}.wav')
+    file_path = os.path.join(audio_directory, f'{id_string}.wav')
     
-    if os.path.isfile(recording_path):
-        logging.info(f"Recording {recording_id}.wav is already downloaded.")
-        return recording_path
-    print(f'donwloading {recording_id} to {recording_path}')
+    if os.path.isfile(file_path):
+        logging.info(f"Recording {id_string}.wav is already downloaded.")
+        return file_path
+    print(f'downloading {id_string} to {file_path}')
     try:
         response = requests.get(recording_api_url.format(recording_id))
         response.raise_for_status()
-        print('download success')
-        with open(recording_path, 'wb') as audio_file:
+        with open(file_path, 'wb') as audio_file:
             audio_file.write(response.content)
         print('download and write success')
-        return recording_path
+        return file_path
     except requests.exceptions.RequestException as e:
         print('download fail')
-        logging.error(f"Error downloading recording {recording_id}: {e}")
+        logging.error(f"Error downloading recording {id_string}: {e}")
         return None
     
 
@@ -143,6 +142,14 @@ def insert_into_database(event):
         connection.commit()
     except psycopg2.Error as e:
         logging.error(f"Error inserting into database: {e}")
+        if e.pgcode == psycopg2.errorcodes.UniqueViolation:
+            logging.info(f"Updating recording_id of event_id={event['idString']}")
+            # Update the existing record in the database with the recording_id
+            # connection = psycopg2.connect(host=db_host, user=db_user, password=db_password, dbname=db_name)
+            # with connection.cursor() as cursor:
+            #     sql = f"UPDATE smru_sample_events SET recording_id={event['recordingIdString']} WHERE event_id={event['idString']}"
+            #     cursor.execute(sql)
+            # connection.commit()
     finally:
         if connection:
             connection.close()
@@ -171,18 +178,20 @@ def main():
     if events:
         for event in events:
             # Download audio recording
-            recording_id = event.get('recordingIdString')
-            print(f"event={event}, recording_id={recording_id}")
-            if recording_id:
-                recording_path = download_recording(recording_id)
+            id_string = event.get('idString')
+            recording_id = event.get('recording_id')
+
+            print(f"event={event}, id_string={id_string}, recording_id={recording_id}")
+            if id_string:
+                recording_path = download_recording(id_string, recording_id)
                 if recording_path:
-                    logging.info(f"Recording {recording_id} downloaded successfully to {recording_path}")
+                    logging.info(f"Recording {id_string} downloaded successfully to {recording_path}")
                     dict_info['last_fetch']['last_download'] = {
-                        'recording_id': recording_id,
+                        'id_string': id_string,
                         'recording_endTime' : event['endTime']
                     }
                 else:
-                    logging.warning(f"Failed to download recording {recording_id}")
+                    logging.warning(f"Failed to download recording {id_string}")
 
             # Insert event metadata into the PostgreSQL database
             insert_into_database(event)
