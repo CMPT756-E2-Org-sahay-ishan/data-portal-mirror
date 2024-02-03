@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 
 # logging configuration
-log_filename = "log.txt"
+log_filename = "log_api.txt"
 logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 #base URL
@@ -42,7 +42,7 @@ def download_audio(event_id,jwt):
     endpoint_url = f"{base_url}/smru/sampleEvent/audio/{event_id}"
     headers = {"Authorization": f"Bearer {jwt}"}
     response = requests.get(endpoint_url, headers=headers)
-    
+    print('downloading is happening in '+endpoint_url)
     if response.status_code == 200:
       
         filename = f"audio_{event_id}.wav"
@@ -55,13 +55,13 @@ def download_audio(event_id,jwt):
         return None
 
 # post annotation for a specific event
-def post_annotation(event_id, confidence, isOrcaFound, jwt):
+def post_annotation(event_id, jwt,  isOrcaFound,confidence):
     headers = {"Authorization": f"Bearer {jwt}"}
     endpoint_url = f"{base_url}/annotations/smru/ml"
     annotation_data = {
         "eventId": event_id,
         "confidence": confidence,    ###If there is a percentage for the decision is recorded here
-        "isOrcaFound":isOrcaFound   #### The value is True or False
+        "ifItIsOrca":isOrcaFound   #### The value is True or False
     }
     response = requests.post(endpoint_url, json=annotation_data, headers=headers)
     
@@ -69,6 +69,21 @@ def post_annotation(event_id, confidence, isOrcaFound, jwt):
         logging.info(f"Annotation posted for event {event_id}")
     else:
         logging.error(f"Error posting annotation for event {event_id}: {response.status_code} - {response.text}")
+
+# start and end times
+start_time = "2023-12-20 00:00:00"
+end_time = "2023-12-20 02:59:59"
+
+###### Note: This can be automated based on the current time and the time of the last fetch recorded on a local file
+
+# ---> NOTE
+"""
+Confidence Value and isOrceFound are hard-coded 
+but they need to be set based on the result of
+the ML model's decision
+"""
+###########################################
+
 
 # start and end times
 start_time = "2023-11-01 00:00:00"
@@ -87,15 +102,16 @@ jwt_token = authenticate(username, password)
 
 if jwt_token:
     # Fetch events between the specified start and end times
-    events = fetch_events_between_times_with_token(start_time, end_time, jwt_token)
+    events = fetch_events_between_times(start_time, end_time, jwt_token)
 
     if events:
         for event in events:
-            event_id = event["event_id"]
-            
+            print(event)
+            event_id = event["eventId"]
+            print(event_id)
             # Download audio for the event
-            audio_filename = download_audio_with_token(event_id, jwt_token)
-            
+            audio_filename = download_audio(event_id, jwt_token)
+            print(audio_filename)
             #####################################################
 
             ###### HERE, MACHINE LEARNING MODEL IS CALLED AND IT DECIDES IF THE FILE IS A TRUE DETECTION
@@ -104,7 +120,7 @@ if jwt_token:
 
             if audio_filename:
                 # Post ML decision for the event. 
-                post_annotation(event_id, confidence=0.9, isOrcaFound=True, jwt_token)  
+                post_annotation(event_id, jwt_token, confidence=0.9, isOrcaFound=True ) 
 
 
 # ---> NOTE

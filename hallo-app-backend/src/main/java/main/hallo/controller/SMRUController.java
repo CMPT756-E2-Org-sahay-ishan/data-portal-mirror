@@ -6,7 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+//import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -33,23 +33,30 @@ import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBo
 import org.springframework.http.MediaType;
 
 import main.hallo.dto.SmruEventsDto;
-import main.hallo.smru.SmruDetectionEvents;
-import main.hallo.smru.SmruDetectionEventsDtoRepo;
-import main.hallo.smru.SmruDetectionEventsRepo;
-import main.hallo.smru.SmruDto;
-import main.hallo.smru.SmruSampleEvent;
-import main.hallo.smru.SmruSampleEventService;
-import main.hallo.smru.SmruService;
+import main.hallo.smru.dto.SmruDto;
+import main.hallo.smru.model.SmruDetectedEvent;
+import main.hallo.smru.model.SmruLimekiln;
+import main.hallo.smru.model.SmruSampleEvent;
+import main.hallo.smru.repo.SmruDetectionEventsDtoRepo;
+import main.hallo.smru.repo.SmruDetectionEventsRepo;
+import main.hallo.smru.services.SmruLimekilnService;
+import main.hallo.smru.services.SmruSampleEventService;
+import main.hallo.smru.services.SmruService;
 
 
 @RestController
 @RequestMapping("/api/smru")
 public class SMRUController {
+
+	@Autowired
+	SmruLimekilnService smruLimekilnService;	
+	
 @Autowired
-SmruService smruService;
+SmruService smruDetectedEventService;
 
 @Autowired
 SmruSampleEventService smruSampleEventService;
+
 
 @Autowired
 SmruDetectionEventsDtoRepo smruRepo;
@@ -62,12 +69,6 @@ private String smruAudioFolder;
 @Value("${smruSampleAudioPath}")
 private String smruSampleAudioFolder;
 
-
-	@GetMapping("")
-	public String
-	getAudio(){
-		return "Hello World!";	
-	}
 	
 	@GetMapping("/events/all")
 	public ResponseEntity<?>
@@ -76,7 +77,7 @@ private String smruSampleAudioFolder;
 	getAllEvents(@AuthenticationPrincipal main.hallo.user.User user){
 	System.out.println("This is the user " +user); 
 
-		List<SmruDetectionEvents> allEvents=smruService.smruEvents();
+		List<SmruDetectedEvent> allEvents=smruDetectedEventService.findAllDetectedEvents();
 		return ResponseEntity.ok(allEvents);
 	}
 	
@@ -116,7 +117,7 @@ private String smruSampleAudioFolder;
 
 	}
 	
-	//####################################### Dwonload multiple audio files in the fomrat of zip
+	//####################################### Download multiple audio files in the format of zip
 	
 	@GetMapping(path = "/audio/downloads/all")
 	public ResponseEntity<StreamingResponseBody> downloadZip(HttpServletResponse response) {
@@ -218,24 +219,49 @@ private String smruSampleAudioFolder;
 	        }
 
 		}
-	  ////
-	    @GetMapping("/sampleEvent")
-	    public List<SmruSampleEvent> getEventsBetweenStartTimes(
+
+	    
+	    //################################################################## return detected events between two time stamps
+	    @GetMapping("/detectedEvent")
+	    public ResponseEntity<List<SmruDetectedEvent>> getDetectedEventsBetweenStartTimes(
 	            @RequestParam String startTime1,
 	            @RequestParam String startTime2) {
+
 	    	//Creating timestamps from inputs
 	    	Timestamp timestamp1 = Timestamp.valueOf(startTime1);
 	    	Timestamp timestamp2 = Timestamp.valueOf(startTime2);
 
-
-	        return smruSampleEventService.findAllEventsBetweenStartTimes(timestamp1, timestamp2);
+	    	return ResponseEntity.ok(smruDetectedEventService.findAllEventsBetweenStartTimes(timestamp1, timestamp2));
 	    }
+	  
+	  //################################################################## return detected sample between two time stamps
+	    @GetMapping("/sampleEvent")
+	    public ResponseEntity<List<SmruSampleEvent>> getSampleEventsBetweenStartTimes(
+	            @RequestParam String startTime1,
+	            @RequestParam String startTime2) {
+
+	    	//Creating timestamps from inputs
+	    	Timestamp timestamp1 = Timestamp.valueOf(startTime1);
+	    	Timestamp timestamp2 = Timestamp.valueOf(startTime2);
+
+	    	return ResponseEntity.ok(smruSampleEventService.findAllEventsBetweenStartTimes(timestamp1, timestamp2));
+	    }
+	       
 	    
-		  ////
+	    //################################################################## return all random events
+
 	    @GetMapping("/sampleEvent/all")
-	    public List<SmruSampleEvent> getEventsSampleAll()
+	    public ResponseEntity<List<SmruSampleEvent>> getEventsSampleAll(@AuthenticationPrincipal main.hallo.user.User user)
 	           {
-	    	return smruSampleEventService.findAllSampleEvents();
+	    	return ResponseEntity.ok(smruSampleEventService.findAllSampleEvents());
+	    	
+	   
+	    }
+	  //################################################################## return all detected events
+	    @GetMapping("/detectedEvent/all")
+	    public ResponseEntity<List<SmruDetectedEvent>> getDetectedSampleAll()
+	           {
+	    	return ResponseEntity.ok(smruDetectedEventService.findAllDetectedEvents());
 	   
 	    }
 }

@@ -1,7 +1,7 @@
 package main.hallo.annotation;
 import javax.persistence.*;
 
-import main.hallo.smru.SmruSampleEvent;
+import main.hallo.smru.model.SmruSampleEvent;
 
 @Entity
 @DiscriminatorValue("ML_MODEL")
@@ -18,7 +18,7 @@ public class MlModelAnnotation extends Annotation{
         // Default constructor
     }
 
-    public MlModelAnnotation(SmruSampleEvent sampleEvent, String confidence, boolean isOrcaFound) {
+    public MlModelAnnotation(SmruSampleEvent sampleEvent, Float confidence, boolean isOrcaFound) {
         super(sampleEvent, confidence);
         this.isOrcaFound = isOrcaFound;
     }

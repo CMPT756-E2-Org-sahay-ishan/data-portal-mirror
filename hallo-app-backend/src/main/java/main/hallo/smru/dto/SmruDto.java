@@ -1,4 +1,4 @@
-package main.hallo.smru;
+package main.hallo.smru.dto;
 
 public interface SmruDto {
 	String getIdstring(); 

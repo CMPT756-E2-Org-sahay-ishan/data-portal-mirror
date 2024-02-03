@@ -14,16 +14,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import main.hallo.annotation.Annotation;
 import main.hallo.annotation.AnnotationService;
-import main.hallo.dto.AnnotationDto;
+import main.hallo.annotation.MlModelAnnotation;
+import main.hallo.annotation.SmruAnnotation;
+import main.hallo.dto.AnnotationMLModelDto;
+import main.hallo.dto.AnnotationSmruManualDto;
 
 @RestController
-@RequestMapping("/api/annotations")
+@RequestMapping("/api/smru/label")
 public class AnnotationController {
 
 	@Autowired
 	AnnotationService  annotationService;
 	
-	@GetMapping("/smru/{eventId}")
+	//################################################################Getting annotations associated to one event
+	
+	@GetMapping("/{eventId}")
 		
 		 public ResponseEntity<List<Annotation>> getAnnotationsByEventId(@PathVariable String eventId) {
         List<Annotation> annotations = annotationService.findAnnotationsByEventId(eventId);
@@ -35,18 +40,33 @@ public class AnnotationController {
         }
 		
 	} 
-	//#################################################################
-    @PostMapping("/smru/ml")
-    public ResponseEntity<?> createAnnotation(@RequestBody AnnotationDto annotationDto) {
-        try {
-            // Assuming AnnotationDto is a DTO class representing the data from the request
-            Annotation createdAnnotation = annotationService.createMLAnnotationForSampleEvents(annotationDto);
-            // Assuming you want to return the created annotation in the response
-            return new ResponseEntity<>(createdAnnotation, HttpStatus.CREATED);
-        } catch (Exception e) {
+ 
+    //##################################################### End point for posting manual annotation, such as by SMRU
+    @PostMapping("/manual")
+    public ResponseEntity<?> createManualDecision(@RequestBody AnnotationSmruManualDto annotationManual) {
+    	try {
+    	Annotation savedAnnotation = annotationService.saveManualAnnotation(annotationManual);
+        return ResponseEntity.ok("Manual annotation created with ID: " + savedAnnotation.getAnnotationId());
+    }
+    	catch (Exception e) {
             // Handle exceptions and return an appropriate response
             return new ResponseEntity<>("Failed to create annotation: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-	
+    //######################################################## End point for posting ML model label
+    @PostMapping("/ml")
+    public ResponseEntity<?> createMLDecision(@RequestBody AnnotationMLModelDto annotationDto) {
+    	System.out.println("This is a new annotation "+ annotationDto);
+    	try {
+         annotationService.saveMLAnnotation(annotationDto);
+         
+        return ResponseEntity.ok("Manual annotation created with ID: " + annotationDto.getEventId());
+    }
+    	catch (Exception e) {
+            // Handle exceptions and return an appropriate response
+            return new ResponseEntity<>("Failed to create annotation: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    //########################################################
+
 }

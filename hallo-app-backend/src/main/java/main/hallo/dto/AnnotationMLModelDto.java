@@ -1,9 +1,9 @@
 package main.hallo.dto;
 
-public class AnnotationDto {
+public class AnnotationMLModelDto {
 	private String eventId;
-	private String confidence;
-	private String annotator;
+	private Float confidence;
+	
 	private boolean ifItIsOrca;
 	
 	public String getEventId() {
@@ -12,18 +12,13 @@ public class AnnotationDto {
 	public void setEventId(String eventId) {
 		this.eventId = eventId;
 	}
-	public String getConfidence() {
+	public Float getConfidence() {
 		return confidence;
 	}
-	public void setConfidence(String confidence) {
+	public void setConfidence(Float confidence) {
 		this.confidence = confidence;
 	}
-	public String getAnnotator() {
-		return annotator;
-	}
-	public void setAnnotator(String annotator) {
-		this.annotator = annotator;
-	}
+
 	public boolean isIfItIsOrca() {
 		return ifItIsOrca;
 	}
@@ -32,8 +27,8 @@ public class AnnotationDto {
 	}
 	@Override
 	public String toString() {
-		return "AnnotationDto [eventId=" + eventId + ", confidence=" + confidence + ", annotator=" + annotator
-				+ ", ifItIsOrca=" + ifItIsOrca + "]";
+		return "AnnotationDto [eventId=" + eventId + ", confidence=" + confidence + 
+				", ifItIsOrca=" + ifItIsOrca + "]";
 	} 
 	
 	

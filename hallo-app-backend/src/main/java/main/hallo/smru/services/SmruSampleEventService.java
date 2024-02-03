@@ -1,4 +1,4 @@
-package main.hallo.smru;
+package main.hallo.smru.services;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import main.hallo.annotation.Annotation;
+import main.hallo.smru.model.SmruSampleEvent;
+import main.hallo.smru.repo.SmruSampleEventRepo;
 
 @Service
 public class SmruSampleEventService {

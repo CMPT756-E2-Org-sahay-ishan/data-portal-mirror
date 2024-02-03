@@ -1,9 +1,16 @@
-package main.hallo.smru;
+package main.hallo.smru.model;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -11,17 +18,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import main.hallo.annotation.Annotation;
 
-import java.sql.Timestamp;
-import java.util.List;
-
 @Entity
-@Table(name = "smru_sample_events", schema = "public")
-public class SmruSampleEvent {
-
-    @Id
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "EVENT_TYPE") 
+@Table(name = "smru_limekiln", schema = "public")
+public class SmruLimekiln {
+	@Id
     @Column(name = "event_id", nullable = false, length = 255)
-    private String eventId;
-
+	private String eventId;
+	
     @Column(name = "alert_type", length = 255)
     private String alertType;
 
@@ -36,38 +41,14 @@ public class SmruSampleEvent {
     @JsonIgnore
     @Column(name = "recording_id", length = 255)
     private String recordingId;
-    @JsonIgnore
-    @OneToMany(mappedBy = "sampleEvent", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Annotation> annotations;
+	@JsonIgnore
+	@OneToMany(mappedBy = "smruLimekiln", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Annotation> annotations = new ArrayList<>();
 
-    // Constructors, getters, and setters...
-
-    public SmruSampleEvent() {
-        // Default constructor
-    }
-
-    public SmruSampleEvent(String eventId, String alertType, Timestamp startTime, Timestamp endTime,
-                       String deploymentId, String recordingId, List<Annotation> annotations) {
-        this.eventId = eventId;
-        this.alertType = alertType;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.deploymentId = deploymentId;
-        this.recordingId = recordingId;
-        this.annotations = annotations;
-    }
-
-    // Other methods...
-
-    public List<Annotation> getAnnotations() {
-        return annotations;
-    }
-
-    public void setAnnotations(List<Annotation> annotations) {
-        this.annotations = annotations;
-    }
-    
-    
+	public SmruLimekiln() {
+		super();
+		
+	}
 
 	public String getEventId() {
 		return eventId;
@@ -77,6 +58,7 @@ public class SmruSampleEvent {
 		this.eventId = eventId;
 	}
 
+
 	public String getAlertType() {
 		return alertType;
 	}
@@ -85,29 +67,40 @@ public class SmruSampleEvent {
 		this.alertType = alertType;
 	}
 
+
 	public Timestamp getStartTime() {
 		return startTime;
 	}
+
 
 	public void setStartTime(Timestamp startTime) {
 		this.startTime = startTime;
 	}
 
+
+
 	public Timestamp getEndTime() {
 		return endTime;
 	}
+
+
 
 	public void setEndTime(Timestamp endTime) {
 		this.endTime = endTime;
 	}
 
+
+
 	public String getDeploymentId() {
 		return deploymentId;
 	}
 
+
+
 	public void setDeploymentId(String deploymentId) {
 		this.deploymentId = deploymentId;
 	}
+
 
 	public String getRecordingId() {
 		return recordingId;
@@ -117,12 +110,15 @@ public class SmruSampleEvent {
 		this.recordingId = recordingId;
 	}
 
-	@Override
-	public String toString() {
-		return "SmruSampleEvent [eventId=" + eventId + ", alertType=" + alertType + ", startTime=" + startTime
-				+ ", endTime=" + endTime + ", deploymentId=" + deploymentId + ", recordingId=" + recordingId
-				+ ", annotations=" + annotations + "]";
+
+	public List<Annotation> getAnnotations() {
+		return annotations;
 	}
-    
+
+	public void setAnnotations(List<Annotation> annotations) {
+		this.annotations = annotations;
+	}
+	
+	
 
 }

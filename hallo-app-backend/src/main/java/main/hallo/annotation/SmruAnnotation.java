@@ -2,7 +2,7 @@ package main.hallo.annotation;
 
 import javax.persistence.*;
 
-import main.hallo.smru.SmruSampleEvent;
+import main.hallo.smru.model.SmruSampleEvent;
 
 @Entity
 @DiscriminatorValue("SMRU_ANNOTATION")
@@ -10,7 +10,8 @@ public class SmruAnnotation extends Annotation {
 
     @Column(name = "filename")
     private String filename;
-
+    
+    private String manualAnnotation; 
     private String Annotator;
     // Add more fields as needed...
 
@@ -20,14 +21,22 @@ public class SmruAnnotation extends Annotation {
         // Default constructor
     }
 
-    public SmruAnnotation(SmruSampleEvent sampleEvent, String confidence, String filename) {
+    public SmruAnnotation(SmruSampleEvent sampleEvent, Float confidence, String filename) {
         super(sampleEvent, confidence);
         this.filename = filename;
     }
 
-    // Other methods...
+   
 
-    public String getFilename() {
+    public String getManualAnnotation() {
+		return manualAnnotation;
+	}
+
+	public void setManualAnnotation(String manualAnnotation) {
+		this.manualAnnotation = manualAnnotation;
+	}
+
+	public String getFilename() {
         return filename;
     }
 
