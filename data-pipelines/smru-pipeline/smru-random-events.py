@@ -136,8 +136,8 @@ def insert_into_database(event):
         connection = psycopg2.connect(host=db_host, user=db_user, password=db_password, dbname=db_name)
         with connection.cursor() as cursor:
             # SQL query
-            sql = "INSERT INTO smru_sample_events (alert_type, start_time, end_time, event_id, deployment_id, recording_id) VALUES (%s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, (event['alertType'], event['startTime'], event['endTime'], event['idString'],
+            sql = "INSERT INTO smru_limekiln (event_type,alert_type, start_time, end_time, event_id, deployment_id, recording_id) VALUES (%s,%s, %s, %s, %s, %s, %s)"
+            cursor.execute(sql, ('RANDOM',event['alertType'], event['startTime'], event['endTime'], event['idString'],
                                  event['deploymentIdString'], event['recordingIdString']))
         connection.commit()
     except psycopg2.Error as e:
