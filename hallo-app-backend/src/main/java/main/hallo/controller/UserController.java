@@ -21,7 +21,7 @@ import main.hallo.user.UserService;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080", "https://assignments.coderscampus.com"}, allowCredentials = "true")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:8080"}, allowCredentials = "true")
 public class UserController {
     @Autowired
     private UserService userService;
@@ -38,7 +38,7 @@ public class UserController {
 //    }
 
  
-
+    @CrossOrigin(origins = "https://portal.orca.research.sfu.ca")
     @PostMapping("/register")
     private ResponseEntity<?> createUser(@RequestBody UserDto userDto) {
     	
