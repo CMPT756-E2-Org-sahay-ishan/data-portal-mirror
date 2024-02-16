@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import main.hallo.dto.SmruEventsDto;
 import main.hallo.smru.dto.SmruDto;
 import main.hallo.smru.model.SmruDetectedEvent;
 import main.hallo.smru.model.SmruSampleEvent;
@@ -17,9 +16,9 @@ import main.hallo.smru.model.SmruSampleEvent;
 @Repository
 public interface SmruDetectionEventsRepo extends JpaRepository<SmruDetectedEvent, String>{
 
-	@Query(nativeQuery = true, value="select idstring,date(to_timestamp(replace(replace(densestminutestarttime, 'T', ' '), 'Z', ''), 'YYYY-MM-DD HH24:MI:SS')), "
-			+ "cast(to_timestamp(replace(replace(densestminutestarttime, 'T', ' '), 'Z', ''), 'YYYY-MM-DD HH24:MI:SS') as time) as time "
-			+ "from smru_detection_events;")
+	@Query(nativeQuery = true, value="select event_id as idstring,date(to_timestamp(replace(replace(densest_minute_start_time, 'T', ' '), 'Z', ''), 'YYYY-MM-DD HH24:MI:SS')), "
+			+ "cast(to_timestamp(replace(replace(densest_minute_start_time, 'T', ' '), 'Z', ''), 'YYYY-MM-DD HH24:MI:SS') as time) as time "
+			+ "from smru_limekiln where event_type='DETECTED';")
 	List<SmruDto> allDtoresults();
 	
 	
