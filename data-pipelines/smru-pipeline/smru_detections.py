@@ -6,7 +6,6 @@ import datetime
 import psycopg2
 import logging
 import pytz
-check=None
 # Logging setup
 logging.basicConfig(filename='sample_file.log', level=logging.ERROR)
 
@@ -69,7 +68,6 @@ api_url = "api_url".format(
 try:
     response = requests.get(api_url, timeout=20)
     detections = response.json()
-    check=detections
     conn = connect_to_database()
     cursor = conn.cursor()
     
