@@ -10,15 +10,11 @@ import logging
 from urllib.request import urlopen
 from shutil import copyfileobj
 from psycopg2 import sql
+from pipeline_env import load_env, load_latest
 
 # Configure logging
-logging.basicConfig(filename='sample_file.log', level=logging.ERROR)
 
 # Create the API URL
-api_url = "http://smruna.eastus.cloudapp.azure.com:9080/recording/wav?recordingId="
-audio_path = "DETECTED_FOLDER/"
-
-
 
 # Function to download audio file
 def download_audio(url, file_path):
@@ -30,15 +26,19 @@ def download_audio(url, file_path):
         logging.error(f"HTTP Error: {e}")
 
 # process_records function
-def process_records(records, cursor):
+@load_env("download_detected_audio.api_url")
+@load_env("download_detected_audio.audio_path")
+def process_records(records, cursor, **kwargs):
+    env = kwargs.get("env")
+
     for record in records:
         recording_id = None
         if record[1]!="None":  # Check if recordingId exists
             recording_id = record[1]
 
         if recording_id:  # Check if recordingId exists and is not null
-            url = api_url + recording_id
-            file_path = os.path.join(audio_path, record[0] + '.wav')
+            url = env.api_url + recording_id
+            file_path = os.path.join(env.audio_path, record[0] + '.wav')
             download_audio(url, file_path)  # Download audio
             try:
 
@@ -84,13 +84,16 @@ def process_records(records, cursor):
             except Exception as err:
                  logging.error(f"Error processing record: {err}")
 
-def main():
+@load_env("download_detected_audio.connection")
+def main(**kwargs):
+    env = kwargs.get("env")
+
     conn = psycopg2.connect(
-        database="",
-        user='',
-        password='USE_YOUR_OWN_PASSWORD',
-        host='localhost',
-        port='0'
+        database=env.db_name,
+        user=env.db_user,
+        password=env.db_password,
+        host=env.db_host,
+        port=env.db_port
     )
     conn.autocommit = True
     cursor = conn.cursor()
@@ -108,6 +111,13 @@ def main():
             conn.close()
             
 if __name__ == "__main__":
+
+    with load_latest("download_detected_audio.log_file") as ctx:
+        log_file = ctx.get("log_file")
+
+    # Logging setup
+    logging.basicConfig(filename=log_file, level=logging.ERROR)
+
     main()
 
 

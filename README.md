@@ -91,3 +91,20 @@ For open source projects, say how it is licensed.
 ## Project status
 If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
 
+# Docker
+
+1. Create a postgres database as described by the [backend](hallo-app-backend/README.md#Deployment). Update the postgres configuration to allow connections from a local subnet. by editing the file `vim /opt/homebrew/var/postgresql@13/pg_hba.conf` with any text editor. Change postgresql@13 with applicable path. Add the following line at the end and save.
+```
+host    all             all             10.5.0.0/16             md5
+```
+
+2. Create a copy of `docker-sample.env` as `.env`.
+> Note the unquoted variable for `smruAudioPath`
+
+3. Build and start containers with `docker compose up --build`
+
+The front end will be accessible via localhost:80 (ensure port 80 is unoccupied).
+> The `.env` from the root directory is automatically shared when building the image and starting a container. To use a specific file prepend the command the docker compose command with `COMPOSE_ENV_FILES`. 
+> e.g. `$ COMPOSE_ENV_FILES=.env.docker docker compose up `
+
+The contents of an `.env` file can be substituted (copy/paste) in Sprint Tools Suite 4 (or Eclipse) under Run -> Run Configurations... -> Environment tab. Runtime environment variables will override `resources/application-*.properties`.
