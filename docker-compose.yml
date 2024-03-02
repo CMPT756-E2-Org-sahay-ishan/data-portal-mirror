@@ -14,8 +14,8 @@ services:
     volumes:
       - ${smruAudioPath}:${smruAudioPath}:ro
       - ${smruSampleAudioPath}:${smruSampleAudioPath}:ro
-      - ./config:/app/config:ro
-      - .env:/app/.env:ro
+      - ./config/backend:/app/config:ro
+      - ./config/.env:/app/.env:ro
 
     # env_file: docker.env
     environment:
