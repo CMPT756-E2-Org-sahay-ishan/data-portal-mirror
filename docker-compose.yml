@@ -12,16 +12,16 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      - DETECTED_FOLDER:DETECTED_FOLDER
-      - RANDOM_FOLDER:RANDOM_FOLDER
+      - ${smruAudioPath}:${smruAudioPath}:ro
+      - ${smruSampleAudioPath}:${smruSampleAudioPath}:ro
+      - ./config:/app/config:ro
+      - .env:/app/.env:ro
 
-    environment: # 172.17.0.1
-      - spring.datasource.url=jdbc:postgresql://host.docker.internal:0/hallo
-      - spring.datasource.username=development
-      - spring.datasource.password=USE_YOUR_OWN_PASSWORD
-      - spring.profiles.active=prod
+    # env_file: docker.env
+    environment:
+      - spring.profiles.active=${SPRING_PROFILES_ACTIVE:?error} #${profile}
     restart: unless-stopped
-
+        
   front-end:
     build:
       context: hallo-app-frontend

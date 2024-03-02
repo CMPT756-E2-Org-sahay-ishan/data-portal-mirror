@@ -24,19 +24,21 @@ COPY src src
 
 # Package the application
 RUN ./mvnw package -DskipTests
-RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
+# RUN mkdir -p target/dependency && (cd target/dependency; jar -xf ../*.jar)
 
 
 #### Stage 2: A minimal docker image with command to run the app 
 FROM adoptopenjdk/openjdk15:ubi
 
-ARG DEPENDENCY=/app/target/dependency
+# ARG DEPENDENCY=/app/target/dependency
+ARG JAR_FILE=/app/target/*.jar
+WORKDIR /app
 
 # Copy project dependencies from the build stage
-COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
-COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
-COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
- 
-ENTRYPOINT ["java","-cp","app:app/lib/*","main.hallo.HalloApplication"]
+# COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /app/lib
+# COPY --from=build ${DEPENDENCY}/META-INF /app/META-INF
+# COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /app
+COPY --from=build $JAR_FILE /app/runner.jar
 
-
+# ENTRYPOINT [ "printenv" ]
+ENTRYPOINT ["java", "-jar", "/app/runner.jar"]

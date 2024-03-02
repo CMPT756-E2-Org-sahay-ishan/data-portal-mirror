@@ -15,7 +15,7 @@
 	<name>hallo</name>
 	<description>Hallo Backend</description>
 	<properties>
-		
+
 	</properties>
 	<dependencies>
 		<dependency>
@@ -51,11 +51,16 @@
 			<artifactId>jjwt</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-<!-- 		<dependency>
-    <groupId>com.github.paulcwarren</groupId>
-    <artifactId>spring-content-fs-boot-starter</artifactId>
-    <version>3.0.5</version>
-</dependency> -->
+		<!-- <dependency>
+			<groupId>com.github.paulcwarren</groupId>
+			<artifactId>spring-content-fs-boot-starter</artifactId>
+			<version>3.0.5</version>
+		</dependency> -->
+		<dependency>
+			<groupId>me.paulschwarz</groupId>
+			<artifactId>spring-dotenv</artifactId>
+			<version>4.0.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>

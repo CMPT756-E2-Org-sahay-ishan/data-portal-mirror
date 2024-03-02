@@ -8,31 +8,25 @@ import logging
 import time
 import yaml
 import argparse
+from pipeline_env import load_env, load_latest
 
-
-# Configure logging
-logging.basicConfig(filename='sample_file.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Configure logger
 
 # Database connection details
-db_host = 'localhost'
-db_user = ''
-db_password = 'USE_YOUR_OWN_PASSWORD'
-db_name = 'hallo'
 
 # API endpoints
-event_api_url = 'api_url'
-recording_api_url = 'api_url'
 
 # Directory to save audio recordings
-audio_directory = '/data01/audio/smru/random_audio/'
 
 seconds_2_milliseconds = lambda x : int(round( x.timestamp() * 1000 ))
-DOWNLOAD_WITHIN = {'days': 1}
-CHECK_WITHIN = DOWNLOAD_WITHIN
 ######################################################## Record the current time that the script is running and pass it as a parameter
-file_path = "sample_file.yaml"
 
-def get_start_end_time(file_path:str = file_path):
+@load_env(name="smru_random_events")
+def get_start_end_time(file_path:str, **kwargs):
+
+    env = kwargs.pop('env')
+    file_path = file_path or env.file_path
+    
     # TODO: utc.now() and other time functions are deprecated. Update to a modern python (3.12) standard
     NOW = datetime.utcnow().replace(tzinfo=timezone.utc) #tzinfo=pytz.timezone('America/Vancouver')
     start_time = NOW - timedelta(minutes=10) # 10 minutes ago in milliseconds
@@ -59,23 +53,24 @@ def get_start_end_time(file_path:str = file_path):
                     pass
     
     if last_download_time: # TODO: Condition for DEV
-    # if last_download_time and  NOW - timedelta(**CHECK_WITHIN) <= last_download_time <= NOW: # TODO: Condition for PROD
+    # if last_download_time and  NOW - timedelta(**env.CHECK_WITHIN) <= last_download_time <= NOW: # TODO: Condition for PROD
         end_time = NOW
         start_time = last_download_time
 
     else:
         end_time = NOW
-        start_time = NOW - timedelta(**DOWNLOAD_WITHIN)
+        start_time = NOW - timedelta(**env.DOWNLOAD_WITHIN)
 
 
     return start_time, end_time, NOW
 
-def save_to_file(dict_info:dict, file_path:str = file_path):
-
-    logging.info(f"{dict_info}")
+@load_env(name="smru_random_events.file_path")
+def save_to_file(dict_info:dict, file_path:str=None, **kwargs):
+    env = kwargs.pop('env')
+    
 
     # Write the end time to the file
-    with open(file_path, "w") as yaml_file:
+    with open(env.file_path, "w") as yaml_file:
         yaml.dump(dict_info, yaml_file,
                   default_flow_style = False, 
                   allow_unicode = True, 
@@ -89,7 +84,8 @@ def save_to_file(dict_info:dict, file_path:str = file_path):
 
 
 # Function to fetch events from the API
-def fetch_events(start_time:int, end_time:int):
+@load_env(name="smru_random_events.event_api_url")
+def fetch_events(start_time:int, end_time:int, **kwargs):
     """Fetch events from API Endpoint
 
     Args:
@@ -99,8 +95,9 @@ def fetch_events(start_time:int, end_time:int):
     Returns:
         dict | None: JSON response of http request to API
     """
+    env = kwargs.pop('env')
     try:
-        response = requests.get(event_api_url.format(start_time, end_time))
+        response = requests.get(env.event_api_url.format(start_time, end_time))
         response.raise_for_status()  # Raise an HTTPError for bad responses
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -108,32 +105,39 @@ def fetch_events(start_time:int, end_time:int):
         return None
 
 # Function to download audio recording
-def download_recording(id_string, recording_id):
+@load_env(name="smru_random_events.recording_api_url")
+@load_env(name="smru_random_events.audio_directory")
+def download_recording(id_string, recording_id, **kwargs):
+    env = kwargs.pop('env')
+
     print(f'download_recording')
 
-    file_path = os.path.join(audio_directory, f'{id_string}.wav')
+    file_path = os.path.join(env.audio_directory, f'{id_string}.wav')
     
     if os.path.isfile(file_path):
         logging.info(f"Recording {id_string}.wav is already downloaded.")
         return file_path
     print(f'downloading {id_string} to {file_path}')
     try:
-        response = requests.get(recording_api_url.format(recording_id))
+        response = requests.get(env.recording_api_url.format(recording_id))
         response.raise_for_status()
         with open(file_path, 'wb') as audio_file:
             audio_file.write(response.content)
         print('download and write success')
         return file_path
-    except requests.exceptions.RequestException as e:
+    except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
         print('download fail')
         logging.error(f"Error downloading recording {id_string}: {e}")
         return None
     
 
 # Function to insert event metadata into the PostgreSQL database
-def insert_into_database(event):
+@load_env(name="smru_random_events.connection")
+def insert_into_database(event, **kwargs):
+    env = kwargs.pop('env')
+    
     try:
-        connection = psycopg2.connect(host=db_host, user=db_user, password=db_password, dbname=db_name)
+        connection = psycopg2.connect(host=env.db_host, port=env.db_port, user=env.db_user, password=env.db_password, dbname=env.db_name)
         with connection.cursor() as cursor:
             # SQL query
             sql = "INSERT INTO smru_limekiln (event_type,alert_type, start_time, end_time, event_id, deployment_id, recording_id) VALUES (%s,%s, %s, %s, %s, %s, %s)"
@@ -155,11 +159,13 @@ def insert_into_database(event):
             connection.close()
 
 # Main script
-def main():
+@load_env(name="smru_random_events.file_path")
+def main(**kwargs):
     # Fetch events from the last time that the script was executed
     
+    env = kwargs.pop('env')
    
-    start_time, end_time, NOW = get_start_end_time(file_path)
+    start_time, end_time, NOW = get_start_end_time(env.file_path)
 
     events = fetch_events(seconds_2_milliseconds(start_time),
                           seconds_2_milliseconds(end_time))
@@ -201,6 +207,12 @@ def main():
     print(f"start_time={start_time}, end_time={end_time}, num_events={len(events)} done", end='\n\n')
     
 if __name__ == "__main__":
+    
+    with load_latest("smru_random_events.log_file") as ctx:
+        log_file = ctx.get("log_file")
+        # print(ctx)
+    logging.basicConfig(filename=log_file, level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+    
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('-m', '--message', type=str, help='Any message to be sent to the logger.')
     args = parser.parse_args()
