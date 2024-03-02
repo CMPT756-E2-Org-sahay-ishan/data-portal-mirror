@@ -1,3 +1,6 @@
+config
+cerbot
+
 # Raw or sample audio files
 audio/
 *.log
