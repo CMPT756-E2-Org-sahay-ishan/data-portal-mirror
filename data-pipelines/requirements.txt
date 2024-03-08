@@ -1,0 +1,7 @@
+requests
+psycopg2
+pyyaml
+python-dotenv
+envyaml
+python-dateutil
+pytz

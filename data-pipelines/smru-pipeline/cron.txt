@@ -1,0 +1,6 @@
+*/20 * * * * cd /home/centos/hallo-dev/ && /usr/bin/python3.6 /home/centos/hallo-dev/smru_detections.py
+5-59/20 * * * * cd /home/centos/hallo-dev/ && /usr/bin/python3.6 /home/centos/hallo-dev/audio.py
+
+
+*/30 * * * * cd /data01/hallo-production/hallo-data-portal/data-pipelines/smru-pipeline && /usr/bin/python3.6 /data01/hallo-production/hallo-data-portal/data-pipelines/smru-pipeline/smru-random-events.py --message "Cron job invocation" 2>&1 | tee -a /data01/logs/smru_cron_job.log
+

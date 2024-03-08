@@ -1,0 +1,72 @@
+version: '3'
+services:
+  back-end:
+    build:
+      context: hallo-app-backend
+      dockerfile: Dockerfile
+    ports:
+      - 8080:8080
+    networks: 
+      hallonet:
+        ipv4_address: 10.5.0.5
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ${smruAudioPath}:${smruAudioPath}:ro
+      - ${smruSampleAudioPath}:${smruSampleAudioPath}:ro
+      - ./config/backend:/app/config:ro
+      - ./config/.env:/app/.env:ro
+
+    # env_file: docker.env
+    environment:
+      - spring.profiles.active=${SPRING_PROFILES_ACTIVE:?error} #${profile}
+    restart: unless-stopped
+        
+  front-end:
+    build:
+      context: hallo-app-frontend
+      dockerfile: Dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    networks: 
+      hallonet:
+        ipv4_address: 10.5.0.6
+    volumes:
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf:/etc/letsencrypt
+    depends_on:
+      - back-end
+    restart: unless-stopped
+  ssl:
+    image: certbot/certbot:v1.23.0
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf:/etc/letsencrypt/:rw
+    networks: 
+      hallonet:
+        ipv4_address: 10.5.0.7
+    depends_on:
+      - front-end
+    command:
+        - renew
+        #- certonly
+        #- --webroot
+        #- -w
+        #- /var/www/certbot/
+        #- --email=${CERTBOT_EMAIL}
+        #- --agree-tos
+        #- --no-eff-email
+        #- -d
+        #- portal.orca.research.sfu.ca
+
+
+networks:
+  hallonet:
+    driver: bridge
+    name: hallonet
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1

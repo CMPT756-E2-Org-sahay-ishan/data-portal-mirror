@@ -1,0 +1,27 @@
+project:
+  name: "PROJECT_NAME-PROJECT_ID"
+
+database: &id_database
+    db_host: $DB_HOSTNAME
+    db_port: $DB_PORT
+    db_user: $DB_USER
+    db_password: $DB_PASSWORD
+    db_name: $DB_NAME
+
+random_events:
+  connection: *id_database
+  event_api_url: 'http://url.to/api/endpoint?deploymentId=XXXXXXX&startTimeStamp={}&endTimeStamp={}'
+  recording_api_url: 'http://://url.to/api/endpoint?recordingId={}'
+  audio_directory: 'path/to/data/folder/with/audio'
+  log_file: 'path/to/logs/file.log'
+  DOWNLOAD_WITHIN: # DOWNLOAD_WITHIN = {'days': 1}
+    days: 1
+  CHECK_WITHIN: # CHECK_WITHIN = DOWNLOAD_WITHIN
+    days: 1
+  file_path: "path/to/state/file.yml"
+
+detections:
+  connection: &id-database
+  api_url: 'http://url.to/api/endpoint?deploymentId=XXXXXXX&startTimeStamp={}&endTimeStamp={}'
+  log_file: 'path/to/logs/latest.txt'
+  log_error: 'path/to/logs/error_log.txt'
