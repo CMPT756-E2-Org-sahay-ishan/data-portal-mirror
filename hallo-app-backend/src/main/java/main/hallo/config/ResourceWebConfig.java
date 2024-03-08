@@ -15,7 +15,6 @@ public class ResourceWebConfig implements WebMvcConfigurer {
   public void addResourceHandlers(final ResourceHandlerRegistry registry) {
 
     registry
-    .addResourceHandler("/SmruAudio/**")
-    .addResourceLocations("AUDIO_FOLDER");
+    .addResourceHandler("/SmruAudio/**");
   }
 }
