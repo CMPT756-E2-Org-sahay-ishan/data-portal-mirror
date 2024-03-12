@@ -46,7 +46,7 @@ $ createdb hallodb -U username
 PGPASSWORD=USE_YOUR_OWN_PASSWORD psql -U <username> hallodb
 ```
 
-6. Allow local/remove connection (peer authentication error)
+6. TODO: Allow local/remove connection (peer authentication error)
 
 
 ## Docker
