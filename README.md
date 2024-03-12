@@ -1,9 +1,20 @@
 # HALLO Data Portal
 
+The goal of this project is to create a platform for HALLO - Humans and Algorithms Listening to Orcas (and the coastal-science organization) to support researchers, citizen scientist, the public and protect marine wildlife in the Salish Sea. 
 
+At this stage of the project, our focus is on collecting a variety of data streams and make them accessible to researchers and citizen scientists. 
+
+This work was completed in part with resources provided by the Research Computing Group, IT Services at Simon Fraser University, including the use of the Cedar / Cedar Cloud and the advanced support from the Research Computing Group, to carry out the development presented here.
+
+# Table of Contents
+1. [Getting Started](#getting-started)
+2. [Database](#database)
+3. Standalone [Backend](./hallo-app-backend/README.md "standalone backend") application
+4. Standalone [Frontend](./hallo-app-frontend/README.md "standalone frontend") application
+5. Standalone [data-pipelines](./data-pipelines/README.md "standalone pipelines")
+6. [Docker](#docker)
 
 ## Getting started
-
 To make it easy for you to get started with GitLab, here's a list of recommended next steps.
 
 Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
@@ -91,20 +102,102 @@ For open source projects, say how it is licensed.
 ## Project status
 If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
 
-# Docker
+## Getting started
 
-1. Create a postgres database as described by the [backend](hallo-app-backend/README.md#Deployment). Update the postgres configuration to allow connections from a local subnet. by editing the file `vim /opt/homebrew/var/postgresql@13/pg_hba.conf` with any text editor. Change postgresql@13 with applicable path. Add the following line at the end and save.
+The data portal application consists of loosely connected components including a database, backend server, frontend application and data ingestion pipelines for the variety of data sources.
+
+This project can be deployed using package managers (`mvn`, `npm`, `pip`), IDE and their plugins (Spring Tools Suite, VS Code) or using containers built with `docker-compose`.
+
+### Configure your credentials and secrets
+  
+Sensitive information, like usernames, credentials and file paths, are not hardcoded in source code. Instead, they are parametrized and loaded from environment variables (.env) or properties files (*.properties) at runtime. [Samples](sample_config/) of `*.properties` and `.env` file are provided.
+
+1. Create a copy of the folder `sample_config` as `config`. 
+2. Remove `.sample` from any file names contained in the config folder
+3. Fill the variables accordingly or as you work through this section.
+
+The predefined variables serve as a minimum working example to run the database, backend, frontend and pipelines in the project. Do not use spaces in the variables, specially paths.
+
+The config folder in the root directory serves as a configuration applicable to all components (backend, frontend, pipelines) when deployed using `docker-compose.yml`. For each component, update these variables as needed depending on your runtime environment. 
+
+The config folder is not part of the build image. They will be [ignored](./.dockerignore) during a docker build from the parent folder (e.g. using docker compose). Instead, they are provided at runtime and volume mounts.
+
+```yaml
+    volumes:
+      - ./config/backend:/app/config:ro
+      - ./config/.env:/app/.env:ro
 ```
-host    all             all             10.5.0.0/16             md5
+```shell
+$ docker compose -e SPRING_PROFILES_ACTIVE=dev up   
 ```
 
-2. Create a copy of `docker-sample.env` as `.env`.
-> Note the unquoted variable for `smruAudioPath`
+When running the components individually, refer to specific instructions for [backend](./hallo-app-backend/README.md#configure-usernames-passwords-and-other-sensitive-information), [frontend](./hallo-app-frontend/README.md#npm-start), [database](./database/README.md) and [data-pipelines](./data-pipelines/README.md)
 
-3. Build and start containers with `docker compose up --build`
+> [!Important]
+> The variables set in the `hallo-backend/config/` files are automatically loaded when building/loading by Spring Tools Suite and Maven `mvn` package manager.   
+
+### Database
+
+Create a postgres database on the local host as described by the [database installation](./database/README.md#installation) section.
+After configuring, provide the database host, port, name, username and password in the .env file.
+
+The database is the only component that is not dockerized. When the database is running locally and other components run from their docker containers, the database hostname must be **"host.docker.internal"**.
+ 
+### Data pipelines
+
+[Data pipelines](./data-pipelines/) for each source are defined in this component. The pipelines, schemas and schedules vary depending on the source.
+
+Environment variables for each data source/provider are configured in `config/<provider name>-pipeline` in `.yaml` files.
+
+### Backend
+
+The [backend](./hallo-app-backend/) is a standalone Spring Boot application with built-in support for API access (Data API). If using docker-compose, the image will be built according to it's dedicated Dockerfile (using maven) and the java jar file will be executed.
+
+The runtime environment variables are specified in `config/.env` and `config/backend/application-*.properties` used by Java. 
+
+### Frontend
+
+The [frontend](./hallo-app-frontend/) is an self-contained React application. If using docker-compose, the image will be built according to it's dedicated Dockerfile (using `npm install`, `npm run build`) and the front end will be served using nginx within the container. 
+
+The docker container has [configures](./nginx/) nginx to use SSL (https); docker-compose renews the certificate. If a new certificate is needed, specify your email in the environment variable `${CERTBOT_EMAIL}` within `config/.env` and, in docker-compose.yml, swap the commented lines in the ssl service command.
+
+```yaml
+ssl:
+    ...
+    command:
+        - renew
+        #- certonly
+        #- --webroot
+        #- -w
+        #- /var/www/certbot/
+        #- --email=${CERTBOT_EMAIL}
+        #- --agree-tos
+        #- --no-eff-email
+        #- -d
+        #- portal.orca.research.sfu.ca
+```
+
+### Docker
+
+1. Configure your credentials and secrets according to the instructions in its [section](#configure-your-credentials-and-secrets)
+> Notice the unquoted path variables
+
+2. Build and start containers with using the explicit .env file
+```shell
+docker compose --env-file config/.env up --build
+```
 
 The front end will be accessible via localhost:80 (ensure port 80 is unoccupied).
-> The `.env` from the root directory is automatically shared when building the image and starting a container. To use a specific file prepend the command the docker compose command with `COMPOSE_ENV_FILES`. 
-> e.g. `$ COMPOSE_ENV_FILES=.env.docker docker compose up `
+> [!NOTE]
+> The `.env` from the root directory is automatically shared when building the image and starting a container. To use a specific file you can alternatively prepend the docker compose command with `COMPOSE_ENV_FILES` location.
+>
+> e.g. `$ COMPOSE_ENV_FILES=config/.env docker compose up `
 
-The contents of an `.env` file can be substituted (copy/paste) in Sprint Tools Suite 4 (or Eclipse) under Run -> Run Configurations... -> Environment tab. Runtime environment variables will override `resources/application-*.properties`.
+> [!Important]
+> There are multiple ways to provide environment variables. Variety of command line arguments and switches, `COMPOSE_ENV_FILES`, in bulk or explicitly `SPRING_PROFILES_ACTIVE=dev`. 
+>
+> [!TIP]
+> We recommend to use one procedure: the mounted `.env` file and `config` folder (and at most one switch `SPRING_PROFILES_ACTIVE=dev`). 
+>
+> [!CAUTION]
+>This prevents unexpected behaviour due to the rules of precedence. If the switch is already in the .env file, then it is not needed in the command line.
