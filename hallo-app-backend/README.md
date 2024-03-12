@@ -21,7 +21,7 @@ hallo-backend
 └─── .env
 └─── pom.xml
 ```
-The variables set in the environment and local `config/` files are automatically loaded when building/loading by Spring Tools Suite and Maven `mvn` package manager. These files will be [ignored](../.dockerignore) during a docker build from the parent folder (e.g. using docker compose).
+The variables set in the environment and local `config/` files are automatically loaded when building/loading with Spring Tools Suite and Maven `mvn` package manager. These files will be [ignored](../.dockerignore) during a docker build from the parent folder (e.g. using docker compose).
 
 The contents of an `.env` file can be substituted (copy/paste) in Sprint Tools Suite 4 (or Eclipse) under Run -> Run Configurations... -> Environment tab. Runtime environment variables will override `application-*.properties`.
 
