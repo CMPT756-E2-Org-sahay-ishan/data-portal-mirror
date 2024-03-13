@@ -23,19 +23,8 @@ Depending on what you are making, it can be a good idea to include screenshots o
 <!-- ## TODO: Installation
 Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection. -->
 
-## Support
-Please, use the issue tracker for discussions about the data portal. Mention other people if you want to use their expertise, have them provide an estimate, or just be aware of an issue. GitHub lets you mention users and entire teams with the @username syntax, much like Twitter and Facebook do. When you add mentions, consider the following:
-
 <!-- ## TODO: Roadmap
 If you have ideas for releases in the future, it is a good idea to list them in the README. -->
-
-## Contributing
-We love to receive feedback from our community — you! There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests.
-
-We look forward to opening this project to community development once the project has matured. At this moment, we are not looking for help writing code to be incorporated into codebase itself. At the moment, your ideas for improvement are welcomed.
-
-- Since every mention results in an email notification to the person you’re mentioning, try to mention sparingly.
-- When mentioning a user who was previously not involved in an issue, try to make it clear if there’s an action you want them to take or if you’re just making them aware of what’s going on.
 
 ## Authors and acknowledgment
 - HALLO Team / coastal-science
@@ -146,3 +135,12 @@ The front end will be accessible via localhost:80 (ensure port 80 is unoccupied)
 >
 > [!CAUTION]
 >This prevents unexpected behaviour due to the rules of precedence. If the switch is already in the .env file, then it is not needed in the command line.
+
+## Contributing
+We love to receive feedback from our community — you! There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests. At this moment, we are not looking for help writing code that is to be incorporated into the codebase, your ideas for improvement are welcomed.
+
+- Since every mention results in an email notification to the person you’re mentioning, try to mention sparingly.
+- When mentioning a user who was previously not involved in an issue, try to make it clear if there’s an action you want them to take or if you’re just making them aware of what’s going on.
+
+## Support
+Please, use the issue tracker for discussions about the data portal. Mention other people if you want to use their expertise, have them provide an estimate, or just be aware of an issue. GitHub lets you mention users and entire teams with the @username syntax, much like Twitter and Facebook do. When you add mentions, consider the following:
