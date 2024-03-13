@@ -2,7 +2,6 @@
 
 The goal of this project is to create a platform for HALLO - Humans and Algorithms Listening to Orcas (and the coastal-science organization) to support researchers, citizen scientist, the public and protect marine wildlife in the Salish Sea. The data portal is available at https://portal.orca.research.sfu.ca.
 
-
 At this stage of the project, our focus is on collecting a variety of data streams and make them accessible to researchers and citizen scientists. 
 
 This work was completed in part with resources provided by the Research Computing Group, IT Services at Simon Fraser University, including the use of the Cedar / Cedar Cloud and the advanced support from the Research Computing Group, to carry out the development presented here.
@@ -15,20 +14,20 @@ This work was completed in part with resources provided by the Research Computin
 5. Standalone [data-pipelines](./data-pipelines/README.md "standalone pipelines")
 6. [Docker](#docker)
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+<!-- ## Description
+Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors. -->
 
-## TODO: Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+<!-- ## TODO: Visuals
+Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method. -->
 
-## TODO: Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+<!-- ## TODO: Installation
+Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection. -->
 
 ## Support
 Please, use the issue tracker for discussions about the data portal. Mention other people if you want to use their expertise, have them provide an estimate, or just be aware of an issue. GitHub lets you mention users and entire teams with the @username syntax, much like Twitter and Facebook do. When you add mentions, consider the following:
 
-## TODO: Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+<!-- ## TODO: Roadmap
+If you have ideas for releases in the future, it is a good idea to list them in the README. -->
 
 ## Contributing
 We love to receive feedback from our community — you! There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests.
@@ -45,8 +44,8 @@ We look forward to opening this project to community development once the projec
 
 This work was completed in part with resources provided by the Research Computing Group, IT Services at Simon Fraser University, including the use of the Cedar / Cedar Cloud and the advanced support from the Research Computing Group, to carry out the development presented here.
 
-## TODO: License TBD
-For open source projects, say how it is licensed.
+<!-- ## TODO: License TBD
+For open source projects, say how it is licensed. -->
 
 ## Getting started
 
