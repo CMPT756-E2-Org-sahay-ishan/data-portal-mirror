@@ -5,69 +5,35 @@ The goal of this project is to create a platform for HALLO - Humans and Algorith
 At this stage of the project, our focus is on collecting a variety of data streams and make them accessible to researchers and citizen scientists. 
 
 
-## Deployment
-
-SFU cloud provides storage and computational power to host databases, webservers, and files.  A Virtual Machine (VP), `hallo-app`` has been provisioned. This VM has a public IP, which can initiate traffic. 
-To access to this VM, take the following steps:
-
-    ssh <host-name>
-    
-    ssh <vm-name>
-
-    ps aux; kill -9 [process of java -jar target/hallo]
-
-    cd hallo-data-portal/
-
-    mvn clean install -DskipTests
-
-    nohup java -jar target/hallo-0.0.1-SNAPSHOT.jar  >/dev/null &
-
-
 ## Environment Setup
 
-  1. For database setup, do the following:
+### Configure usernames, passwords, and other sensitive information
+  
+Sensitive information, like usernames, credentials and file paths, are not hardcoded in source code. Instead, they are parametrized and loaded from environment variables (.env) or properties files (*.properties). [Samples](../sample_config) of `*.properties` and `.env` file are provided.
 
-    1.0 Install postgresql 
+Whether using the Spring Tools Suite, Maven `mvn` package manager or docker-compose, the hallo-backend expects a root folder structure as follows
+```shell
+hallo-backend
+├─── ...
+└─── config
+      └─ *.properties
+└─── src
+└─── .env
+└─── pom.xml
+```
+The variables set in the environment and local `config/` files are automatically loaded when building/loading with Spring Tools Suite and Maven `mvn` package manager. These files will be [ignored](../.dockerignore) during a docker build from the parent folder (e.g. using docker compose).
 
-    1.1. $ psql postgres -U $USER
-    1.2. # \du
-    
-    1.3. # \conninfo
-    
-    1.4. # create user username;
-    
-    1.5. # alter user username with superuser;
-    
-    1.6. # alter user username createdb;
-    
-    1.7 # \password username
-    USE_YOUR_OWN_PASSWORD
-    1.8 # \q
-    
-    
-    1.8. $ createdb hallodb -U username
-    1.8. $ PGPASSWORD=USE_YOUR_OWN_PASSWORD psql -U username -d hallodb -a -f init.sql
-    If the database is remote, use the same command with host
-    ```
-    $ psql -h host -U username -d myDataBase -a -f myInsertFile
-    ```
+The contents of an `.env` file can be substituted (copy/paste) in Sprint Tools Suite 4 (or Eclipse) under Run -> Run Configurations... -> Environment tab. Runtime environment variables will override `application-*.properties`.
 
-    1.8. PGPASSWORD=USE_YOUR_OWN_PASSWORD psql -U username hallodb
-    To connect to postgres database
-    
-    1.9. Allow local/remove connection (peer authentication error)
-    
-    
-    For Red Hat set up see: https://www.postgresql.org/download/linux/redhat/
-    
-    For MacOS `brew install postgresql@13` and `brew services run postgresql@13`)
+## Deployment
 
+1. Kill the existing java process.
+```shell
+ps aux; kill -9 [process id of java -jar target/hallo]
+```
+2. Change directory into the backend code with `cd hallo-data-portal/hallo-app-backend`. Build the application with `mvn` and run it in headless mode with `nohup`
+```shell
+mvn clean install -DskipTests
 
-2. System setup
-
-  2.1. Install sshpass
-    
-  2.2 Install jq command
-
-  2.3.
-    Install python 3 on Red Hat Enterprise
+nohup java -jar target/hallo-0.0.1-SNAPSHOT.jar  >/dev/null &
+```

@@ -4,7 +4,8 @@ import os
 import json
 import datetime
 import pytz
-
+import subprocess
+import pandas as pd
 # time zone as UTC
 desired_timezone = pytz.utc
 
@@ -15,6 +16,8 @@ logging.basicConfig(filename=log_filename, level=logging.INFO, format="%(asctime
 
 #base URL
 base_url = "https://portal.orca.research.sfu.ca/api"
+audio_folder='/Path to the folder that audios will be downloaded'
+ml_model_outputs='/Path to the folder to record ml model outputs'
 
 ##################################### Handling start and end time for the query
 def get_start_time():
@@ -58,7 +61,7 @@ def authenticate(username, password):
     print(response)
     if response.status_code == 200:
         logging.info("Authentication successful")
-        print(response.headers)
+        # print(response.headers)
         return response.headers.get("Authorization")
     else:
         logging.error(f"Authentication failed: {response.status_code} - {response.text}")
@@ -67,7 +70,7 @@ def authenticate(username, password):
 ########################################### Fetch sample events
 
 def fetch_events_between_times(start_time, end_time,jwt):
-    endpoint_url = f"{base_url}/smru/sampleEvent"
+    endpoint_url = f"{base_url}/smru/detectedEvent"
     headers = {"Authorization": f"Bearer {jwt}"}
     response = requests.get(endpoint_url, params={"startTime1": start_time, "startTime2": end_time}, headers=headers)
     
@@ -79,7 +82,7 @@ def fetch_events_between_times(start_time, end_time,jwt):
     
 ############################################## Download sample events audio files
 def download_audio(event_id,jwt):
-    endpoint_url = f"{base_url}/smru/sampleEvent/audio/{event_id}"
+    endpoint_url = f"{base_url}/smru/audio/{event_id}"
     print(endpoint_url)
     headers = {"Authorization": f"Bearer {jwt}"}
     response = requests.get(endpoint_url, headers=headers)
@@ -87,7 +90,7 @@ def download_audio(event_id,jwt):
     if response.status_code == 200:
       
         filename = f"audio_{event_id}.wav"
-        with open(filename, "wb") as audio_file:
+        with open(audio_folder+filename, "wb") as audio_file:
             audio_file.write(response.content)
         logging.info(f"Audio downloaded for event {event_id}")
         return filename
@@ -115,7 +118,7 @@ def post_annotation(event_id, confidence, isOrcaFound, jwt):
 ###################################################### Fetch sample events between start and end time
 # fetch sample events
 def fetch_events_between_times(start_time, end_time,jwt):
-    endpoint_url = f"{base_url}/smru/sampleEvent"
+    endpoint_url = f"{base_url}/smru/detectedEvent"
     headers = {"Authorization": f"Bearer {jwt}"}
     response = requests.get(endpoint_url, params={"startTime1": start_time, "startTime2": end_time}, headers=headers)
     
@@ -129,16 +132,16 @@ def fetch_events_between_times(start_time, end_time,jwt):
 
 # Specify your username and password for authentication
 
-username = "your username"
-password = "your password"
+username = "Your User Name"
+password = "Your Password"
 
 # Authenticate and obtain JWT token
 jwt_token = authenticate(username, password)
 
 if jwt_token:
     # Fetch events between the specified start and end times
+    start_time1, start_time2 = get_start_and_end_times()
     events = fetch_events_between_times(start_time1, start_time2, jwt_token)
-
     if events:
         for event in events:
             event_id = event["eventId"]
@@ -151,10 +154,23 @@ if jwt_token:
 #####################################################
 
                 ## HERE, MACHINE LEARNING MODEL IS CALLED AND IT DECIDES IF THE AUDIO IS A TRUE DETECTION
-                ##As an example, result is set True
-                result=True
-                # Post annotation for the event
-                post_annotation(event_id, 1, result, jwt_token)
+                result=False
+                audio_path=audio_folder+audio_filename
+                command=f"ketos-run KW_detector.kt {audio_path} --output_folder={ml_model_outputs} --output_function_arguments peak_height=0.5 min_peaks=1"   
+                result = subprocess.run(command, shell=True, capture_output=True, text=True)
+               
+                csv_path=ml_model_outputs+audio_filename+"/detections.csv"
+                if os.path.exists(csv_path):
+                    df = pd.read_csv(csv_path)
+                    item=df.iloc[0, 2]
+                    if str(item)=="False":
+                        result=False
+                    else:
+                        result=True
+                    # Post annotation for the event
+                    post_annotation(event_id, 1, result, jwt_token)
+                if os.path.exists(audio_path):
+                    os.remove(audio_path)
 ########################################################
 
 # ---> NOTE

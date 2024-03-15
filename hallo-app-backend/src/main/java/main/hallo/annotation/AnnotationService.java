@@ -38,7 +38,7 @@ public class AnnotationService {
 	public Annotation saveMLAnnotation(AnnotationMLModelDto annotationDTO) {
 
 		// If event does not exists throw and exception
-		SmruLimekiln event = smruSampleEventRepo.findById(annotationDTO.getEventId()).orElseThrow(
+		SmruLimekiln event = smruLimekilnRepo.findById(annotationDTO.getEventId()).orElseThrow(
 				() -> new RuntimeException("Sample Event not found with id: " + annotationDTO.getEventId()));
 
 		// Create an ML annotation object
@@ -63,7 +63,7 @@ public class AnnotationService {
 	public Annotation saveManualAnnotation(AnnotationSmruManualDto annotationManual) {
 
 		// If event does not exists throw and exception
-		SmruLimekiln event = smruSampleEventRepo.findById(annotationManual.getEventId()).orElseThrow(
+		SmruLimekiln event = smruLimekilnRepo.findById(annotationManual.getEventId()).orElseThrow(
 				() -> new RuntimeException("Sample Event not found with id: " + annotationManual.getEventId()));
 
 		// Create an ML annotation object
