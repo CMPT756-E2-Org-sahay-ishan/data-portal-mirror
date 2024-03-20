@@ -185,10 +185,10 @@ def main(**kwargs):
         for event in events:
             # Download audio recording
             id_string = event.get('idString')
-            recording_id = event.get('recording_id')
+            recording_id = event.get('recordingIdString')
 
             print(f"event={event}, id_string={id_string}, recording_id={recording_id}")
-            if id_string:
+            if id_string and recording_id:
                 recording_path = download_recording(id_string, recording_id)
                 if recording_path:
                     logging.info(f"Recording {id_string} downloaded successfully to {recording_path}")
@@ -199,8 +199,8 @@ def main(**kwargs):
                 else:
                     logging.warning(f"Failed to download recording {id_string}")
 
-            # Insert event metadata into the PostgreSQL database
-            insert_into_database(event)
+                # Insert event metadata into the PostgreSQL database
+                insert_into_database(event)
             logging.info(f"Completed event {event['idString']}")
 
     save_to_file(dict_info)
