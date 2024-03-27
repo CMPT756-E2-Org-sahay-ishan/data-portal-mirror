@@ -1,5 +1,5 @@
 config
-cerbot
+certbot
 
 # Raw or sample audio files
 audio/
