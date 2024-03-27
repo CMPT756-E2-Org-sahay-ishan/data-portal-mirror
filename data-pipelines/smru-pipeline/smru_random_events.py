@@ -121,9 +121,10 @@ def download_recording(id_string, recording_id, **kwargs):
     try:
         response = requests.get(env.recording_api_url.format(recording_id))
         response.raise_for_status()
-        with open(file_path, 'wb') as audio_file:
-            audio_file.write(response.content)
-        print('download and write success')
+        if response.content:
+            with open(file_path, 'wb') as audio_file:
+                audio_file.write(response.content)
+            print('download and write success')
         return file_path
     except (requests.exceptions.RequestException, requests.exceptions.Timeout) as e:
         print('download fail')
