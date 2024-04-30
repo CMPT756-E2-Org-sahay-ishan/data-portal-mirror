@@ -6,12 +6,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class ApiKeyFilter extends OncePerRequestFilter {
-
+	   @Value("${generalAPIKey}")
+	    private String generalKey;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String apiKey = request.getHeader("Api-Key");
@@ -28,6 +30,6 @@ public class ApiKeyFilter extends OncePerRequestFilter {
         // Implement your validation logic here
         // You can check against a database, properties file, or any other source
         // Return true if the API key is valid, false otherwise
-        return apiKey != null && apiKey.equals("ivWNqWY1UJG1CUm2GcML066H");
+        return apiKey != null && apiKey.equals(generalKey);
     }
 }

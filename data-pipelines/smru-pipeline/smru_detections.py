@@ -82,6 +82,24 @@ def main(**kwargs):
     
     # Create the API URL
     api_url = api_url.format(start_timestamp_milliseconds, end_timestamp_milliseconds)
+
+    ## Mapping Json keys returned by API endpoint to coluns in the database
+
+    column_mapping = {
+
+      "id": "idstring",
+      "deploymentId": "deploymentidstring",
+      "recordingId": "recordingidstring",
+      "startTime": "starttime",
+      "endTime": "endtime",
+      "detectionCount": "detectioncount",
+      "densestMinuteStartTime": "densestMinuteStartTime",
+      "recordingRequested": "recordingRequested",
+      "recordingReceived": "recordingReceived",
+      "detectionType": "alerttype",
+      "batchId": "batchId",
+      "hasAnnotation": "hasAnnotation"
+    }
     
     # API call
     try:
@@ -91,26 +109,29 @@ def main(**kwargs):
         cursor = conn.cursor()
         
         for detection in detections:
-            if 'eventAnnotations' in detection:
-                del detection['eventAnnotations']
-            columns = ', '.join(str(x) for x in detection.keys())
-            values = ', '.join("'" + str(x) + "'" for x in detection.values())
             
+            mapped_columns = [column_mapping[key] for key in column_mapping.keys()]
+            columns = ', '.join(mapped_columns)
+            values = ', '.join("'" + str(detection[column]) + "'" for column in column_mapping.keys())
+
             ##Insert the events details into a table that holds the latest events 
             sql_latest_events = "INSERT INTO %s ( %s ) VALUES ( %s );" % ('smru_limekiln_latest_detection_events', columns, values)
                 
             try:
-                cursor.execute(sql_latest_events)
+                cursor.execute(sql_latest_events)       
             except psycopg2.Error as err:
                 logging.error("Error in executing SQL statement: %s", str(err))
                 conn.rollback()
+
             ##Insert latest events details in to a table that holds events that their annotations are not ready yet
-            sql_events_with_no_annotation = "INSERT INTO smru_pending_annotations (alert_type, start_time, end_time, event_id, recording_id, densest_minute_start_time, has_annotation) VALUES ('{}', '{}', '{}', '{}', '{}', '{}', {})".format(
-            detection['alertType'], detection['startTime'], detection['endTime'], 
-            detection['idString'], detection['recordingIdString'], detection['densestMinuteStartTime'], 
+
+            sql_events_with_no_annotation = "INSERT INTO smru_pending_annotations ( alert_type, start_time, end_time, event_id, recording_id, densest_minute_start_time, has_annotation) VALUES ( '{}','{}', '{}', '{}', '{}', '{}', {})".format(
+            detection['detectionType'],detection['startTime'], detection['endTime'], 
+            detection['id'], detection['recordingId'], detection['densestMinuteStartTime'], 
             detection['hasAnnotation'])
 
             try:
+                print("We reached here ----> "+ sql_events_with_no_annotation)
                 cursor.execute(sql_events_with_no_annotation)
             except psycopg2.Error as err:
                 logging.error("Error in executing SQL statement: %s", str(err))

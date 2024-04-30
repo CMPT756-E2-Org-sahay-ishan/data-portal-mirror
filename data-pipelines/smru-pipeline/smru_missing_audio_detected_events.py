@@ -40,9 +40,9 @@ def fetch_recording_id(event_id, event_data):
 
         for event in event_data:
             
-            if event['idString'] == event_id:
+            if event['id'] == event_id:
                 
-                return event['recordingIdString']
+                return event['recordingId']
         return None
 
 ##############################################################
