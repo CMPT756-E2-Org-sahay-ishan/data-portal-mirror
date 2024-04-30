@@ -142,8 +142,8 @@ def insert_into_database(event, **kwargs):
         with connection.cursor() as cursor:
             # SQL query
             sql = "INSERT INTO smru_limekiln (event_type,alert_type, start_time, end_time, event_id, deployment_id, recording_id) VALUES (%s,%s, %s, %s, %s, %s, %s)"
-            cursor.execute(sql, ('RANDOM',event['alertType'], event['startTime'], event['endTime'], event['idString'],
-                                 event['deploymentIdString'], event['recordingIdString']))
+            cursor.execute(sql, ('RANDOM',event['detectionType'], event['startTime'], event['endTime'], event['id'],
+                                 event['deploymentId'], event['recordingId']))
         connection.commit()
     except psycopg2.Error as e:
         logging.error(f"Error inserting into database: {e}")
@@ -185,8 +185,8 @@ def main(**kwargs):
     if events:
         for event in events:
             # Download audio recording
-            id_string = event.get('idString')
-            recording_id = event.get('recordingIdString')
+            id_string = event.get('id')
+            recording_id = event.get('recordingId')
 
             print(f"event={event}, id_string={id_string}, recording_id={recording_id}")
             if id_string and recording_id:
@@ -202,7 +202,7 @@ def main(**kwargs):
 
                 # Insert event metadata into the PostgreSQL database
                 insert_into_database(event)
-            logging.info(f"Completed event {event['idString']}")
+            logging.info(f"Completed event {event['id']}")
 
     save_to_file(dict_info)
     print(f"start_time={start_time}, end_time={end_time}, num_events={len(events)} done", end='\n\n')
