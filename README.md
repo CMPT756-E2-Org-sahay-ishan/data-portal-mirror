@@ -1,4 +1,4 @@
-# HALLO Data Portal
+# HALLO Data Portal-update in gitlab
 
 The goal of this project is to create a platform for HALLO - Humans and Algorithms Listening to Orcas (and the coastal-science organization) to support researchers, citizen scientist, the public and protect marine wildlife in the Salish Sea. The data portal is available at https://portal.orca.research.sfu.ca.
 
